@@ -10,15 +10,12 @@ function PaymentContent() {
   const amountStr = params.get('amount')
   const facilityName = params.get('facility')
   const amount = amountStr ? parseFloat(amountStr) : 0
-  const commission = Math.round(amount * 0.05 * 100) / 100
-  const net = Math.round((amount - commission) * 100) / 100
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [paymentFailed, setPaymentFailed] = useState(params.get('payment') === 'failed')
+  const [paymentFailed] = useState(params.get('payment') === 'failed')
   const paymentSuccess = params.get('payment') === 'success'
 
-  // فحص إشعار نجاح/فشل من callback
   useEffect(() => {
     if (paymentSuccess) {
       router.replace('/player/bookings?payment=success')
@@ -44,11 +41,8 @@ function PaymentContent() {
           description: `حجز ${facilityName ?? 'ملعب'}`,
         }),
       })
-
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'فشل بدء الدفع'); setLoading(false); return }
-
-      // توجيه لرابط البوابة
       window.location.href = data.checkoutUrl
     } catch {
       setError('خطأ في الاتصال. حاول مجدداً.')
@@ -57,61 +51,56 @@ function PaymentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pb-10">
-      <header className="bg-[#0F6E56] text-white px-4 py-4">
-        <p className="text-xs opacity-80">إتمام الحجز</p>
-        <h1 className="text-lg font-bold">الدفع</h1>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)', paddingBottom: 40 }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)' }}>
+        <p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 2px' }}>إتمام الحجز</p>
+        <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>الدفع</h1>
       </header>
 
-      <div className="px-4 py-5 space-y-4">
-        {/* ملخص الطلب */}
-        <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-3">
-          <h2 className="text-sm font-bold text-[#1A1A1A]">ملخص الطلب</h2>
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <h2 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', margin: 0 }}>ملخص الطلب</h2>
           {facilityName && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#6B7280]">المنشأة</span>
-              <span className="font-medium text-[#1A1A1A]">{facilityName}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
+              <span style={{ color: 'var(--text2)' }}>المنشأة</span>
+              <span style={{ fontWeight: 500, color: 'var(--text)' }}>{facilityName}</span>
             </div>
           )}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[#6B7280]">السعر</span>
-            <span className="font-medium">{amount} ريال</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
+            <span style={{ color: 'var(--text2)' }}>السعر</span>
+            <span style={{ fontWeight: 500, color: 'var(--text)' }}>{amount} ريال</span>
           </div>
-          <div className="border-t border-[#F8F9FA] pt-3 flex items-center justify-between">
-            <span className="text-sm font-bold text-[#1A1A1A]">الإجمالي</span>
-            <span className="text-lg font-bold text-[#0F6E56]">{amount} ريال</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>الإجمالي</span>
+            <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary)' }}>{amount} ريال</span>
           </div>
         </div>
 
-        {/* تحذير البوابة */}
-        <div className="bg-[#FFF8E8] border border-[#C17B1A] rounded-2xl p-4">
-          <p className="text-sm font-bold text-[#C17B1A] mb-1">⚙️ بوابة الدفع قيد الإعداد</p>
-          <p className="text-xs text-[#6B7280]">سيتم تفعيل الدفع الإلكتروني قريباً. حجزك محفوظ بحالة &ldquo;انتظار الدفع&rdquo;.</p>
+        <div style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)', borderRadius: 20, padding: 16 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)', margin: '0 0 4px' }}>⚙️ بوابة الدفع قيد الإعداد</p>
+          <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }}>سيتم تفعيل الدفع الإلكتروني قريباً. حجزك محفوظ بحالة &ldquo;انتظار الدفع&rdquo;.</p>
         </div>
 
         {paymentFailed && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-            <p className="text-sm font-bold text-red-500 mb-1">❌ فشلت عملية الدفع</p>
-            <p className="text-xs text-[#6B7280]">لم يتم خصم أي مبلغ. يمكنك المحاولة مجدداً.</p>
+          <div style={{ background: 'var(--danger-dim)', border: '1px solid var(--danger)', borderRadius: 20, padding: 16 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--danger)', margin: '0 0 4px' }}>❌ فشلت عملية الدفع</p>
+            <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }}>لم يتم خصم أي مبلغ. يمكنك المحاولة مجدداً.</p>
           </div>
         )}
 
-        {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+        {error && <p style={{ color: 'var(--danger)', fontSize: 12, textAlign: 'center' }}>{error}</p>}
 
-        {/* زر الدفع */}
         <button onClick={pay} disabled={loading || !bookingId}
-          className="w-full bg-[#0F6E56] text-white py-4 rounded-2xl font-bold text-base disabled:opacity-50">
+          style={{ width: '100%', background: 'var(--primary)', color: 'var(--primary-fg)', padding: '16px', borderRadius: 20, fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer', opacity: (loading || !bookingId) ? 0.5 : 1 }}>
           {loading ? 'جاري التوجيه للدفع...' : `ادفع ${amount} ريال`}
         </button>
 
         <button onClick={() => router.push('/player/bookings')}
-          className="w-full border border-[#E8ECEF] text-[#6B7280] py-3 rounded-2xl text-sm">
+          style={{ width: '100%', border: '1px solid var(--border)', color: 'var(--text2)', padding: '12px', borderRadius: 20, fontSize: 13, background: 'transparent', cursor: 'pointer' }}>
           تخطي — سأدفع لاحقاً
         </button>
 
-        <p className="text-xs text-center text-[#9CA3AF]">
-          الحجز محجوز لمدة محدودة. أكمل الدفع للتأكيد.
-        </p>
+        <p style={{ fontSize: 12, textAlign: 'center', color: 'var(--text3)' }}>الحجز محجوز لمدة محدودة. أكمل الدفع للتأكيد.</p>
       </div>
     </div>
   )
@@ -119,7 +108,7 @@ function PaymentContent() {
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>}>
+    <Suspense fallback={<div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>جاري التحميل...</div>}>
       <PaymentContent />
     </Suspense>
   )
