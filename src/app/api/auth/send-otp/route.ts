@@ -62,7 +62,10 @@ export async function POST(req: NextRequest) {
     otp_hash: otpHash,
   })
 
-  if (error) return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })
+  if (error) {
+    console.error('phone_otps insert error:', JSON.stringify(error))
+    return NextResponse.json({ error: error.message ?? 'خطأ في الخادم' }, { status: 500 })
+  }
 
   const sent = await sendWhatsAppOtp(formattedPhone, otp)
   if (!sent) return NextResponse.json({ error: 'فشل إرسال رسالة الواتساب' }, { status: 500 })
