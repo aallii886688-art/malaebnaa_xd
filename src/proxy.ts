@@ -30,7 +30,16 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protected pages: redirect to login if not logged in
-  const protectedPaths = ['/dashboard', '/admin', '/partner', '/player', '/booking', '/profile', '/payment']
+  // التصفح العام (ملاعب/أكاديميات/بطولات) مفتوح بدون تسجيل — فقط الصفحات الشخصية محمية
+  const protectedPaths = [
+    '/dashboard',
+    '/admin',
+    '/partner',
+    '/player/bookings',
+    '/player/profile',
+    '/player/book',
+    '/payment',
+  ]
   if (!user && protectedPaths.some((p) => pathname.startsWith(p))) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
