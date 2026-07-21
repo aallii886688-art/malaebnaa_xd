@@ -44,28 +44,33 @@ export default function NewAcademyPage() {
     router.push(`/partner/academies/${data.id}`)
   }
 
+  const inputStyle = { width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'transparent', color: 'var(--text)', boxSizing: 'border-box' as const }
+  const labelStyle = { display: 'block' as const, fontSize: 12, fontWeight: 600 as const, color: 'var(--text)', marginBottom: 6 }
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-xl">←</button>
-        <div><p className="text-xs opacity-80">الشريك</p><h1 className="text-lg font-bold">إضافة أكاديمية</h1></div>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
+        <div>
+          <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>الشريك</p>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>إضافة أكاديمية</h1>
+        </div>
       </header>
 
-      <div className="px-4 py-4 space-y-4 pb-10">
-        <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-4">
+      <div style={{ padding: '16px 16px 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">اسم الأكاديمية *</label>
+            <label style={labelStyle}>اسم الأكاديمية *</label>
             <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="مثال: أكاديمية النجوم"
-              className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]" />
+              placeholder="مثال: أكاديمية النجوم" style={inputStyle} />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-2">الرياضات *</label>
-            <div className="grid grid-cols-2 gap-2">
+            <label style={{ ...labelStyle, marginBottom: 8 }}>الرياضات *</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {sportOptions.map((s) => (
                 <button key={s.value} onClick={() => toggleSport(s.value)}
-                  className={`text-xs py-2 px-3 rounded-xl border text-right ${form.sport_types.includes(s.value) ? 'border-[#0F6E56] bg-[#E8F5F1] text-[#0F6E56]' : 'border-[#E8ECEF] text-[#6B7280]'}`}>
+                  style={{ fontSize: 12, padding: '8px 12px', borderRadius: 12, border: `1px solid ${form.sport_types.includes(s.value) ? 'var(--primary)' : 'var(--border)'}`, background: form.sport_types.includes(s.value) ? 'var(--primary-dim)' : 'transparent', color: form.sport_types.includes(s.value) ? 'var(--primary)' : 'var(--text2)', cursor: 'pointer', textAlign: 'right' }}>
                   {s.label}
                 </button>
               ))}
@@ -73,37 +78,37 @@ export default function NewAcademyPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">المدينة *</label>
+            <label style={labelStyle}>المدينة *</label>
             <select value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-              className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]">
+              style={{ ...inputStyle, background: 'var(--card)' }}>
               <option value="">اختر المدينة</option>
               {cities.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">رقم التواصل</label>
-            <div className="flex items-center border border-[#E8ECEF] rounded-xl overflow-hidden focus-within:border-[#0F6E56]" dir="ltr">
-              <span className="px-3 py-2.5 text-sm text-[#6B7280] bg-[#F8F9FA] border-r border-[#E8ECEF]">🇸🇦 +966</span>
+            <label style={labelStyle}>رقم التواصل</label>
+            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }} dir="ltr">
+              <span style={{ padding: '10px 12px', fontSize: 13, color: 'var(--text2)', background: 'var(--bg)', borderRight: '1px solid var(--border)' }}>🇸🇦 +966</span>
               <input type="tel" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 9) }))}
-                placeholder="5XXXXXXXX" className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white" dir="ltr" />
+                placeholder="5XXXXXXXX" style={{ flex: 1, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'transparent', color: 'var(--text)', border: 'none' }} dir="ltr" />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">وصف الأكاديمية</label>
+            <label style={labelStyle}>وصف الأكاديمية</label>
             <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="اكتب وصفاً عن الأكاديمية وما تقدمه..."
-              rows={3} className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56] resize-none" />
+              rows={3} style={{ ...inputStyle, resize: 'none' }} />
           </div>
         </div>
 
-        {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+        {error && <p style={{ color: 'var(--danger)', fontSize: 12, textAlign: 'center' }}>{error}</p>}
         <button onClick={save} disabled={saving}
-          className="w-full bg-[#0F6E56] text-white py-3.5 rounded-2xl font-bold text-sm disabled:opacity-50">
+          style={{ width: '100%', background: 'var(--primary)', color: 'var(--primary-fg)', padding: '14px', borderRadius: 20, fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
           {saving ? 'جاري الحفظ...' : 'إضافة الأكاديمية ←'}
         </button>
-        <p className="text-xs text-center text-[#9CA3AF]">بعد الإضافة ستتمكن من إضافة البرامج التدريبية</p>
+        <p style={{ fontSize: 11, textAlign: 'center', color: 'var(--text3)' }}>بعد الإضافة ستتمكن من إضافة البرامج التدريبية</p>
       </div>
     </div>
   )

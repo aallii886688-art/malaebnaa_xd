@@ -52,64 +52,64 @@ export default function AcademyDetailPage() {
     router.push(`/payment?booking_id=${data.id}&amount=${amount}&facility=${encodeURIComponent(academy!.name + ' — ' + program.name)}`)
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>
-  if (!academy) return <div className="min-h-screen flex items-center justify-center text-red-500">الأكاديمية غير موجودة</div>
+  if (loading) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>جاري التحميل...</div>
+  if (!academy) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)' }}>الأكاديمية غير موجودة</div>
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-xl">←</button>
-        <div className="flex-1">
-          <p className="text-xs opacity-80">{academy.sport_types.map((s) => sportLabel[s]).join(' · ')}</p>
-          <h1 className="text-base font-bold">{academy.name}</h1>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>{academy.sport_types.map((s) => sportLabel[s]).join(' · ')}</p>
+          <h1 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{academy.name}</h1>
         </div>
-        {academy.reviews_count > 0 && <span className="text-sm font-bold">⭐ {academy.rating}</span>}
+        {academy.reviews_count > 0 && <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold)' }}>⭐ {academy.rating}</span>}
       </header>
 
-      <div className="px-4 py-4 space-y-4 pb-10">
-        <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-2">
-          <p className="text-sm text-[#6B7280]">📍 {academy.city}</p>
-          {academy.phone && <a href={`tel:+966${academy.phone}`} className="text-xs text-[#0F6E56]">📞 +966{academy.phone}</a>}
-          {academy.description && <p className="text-xs text-[#6B7280] pt-1">{academy.description}</p>}
+      <div style={{ padding: '16px 16px 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+          <p style={{ fontSize: 13, color: 'var(--text2)', margin: '0 0 8px' }}>📍 {academy.city}</p>
+          {academy.phone && <a href={`tel:+966${academy.phone}`} style={{ fontSize: 12, color: 'var(--primary)', display: 'block', marginBottom: 4, textDecoration: 'none' }}>📞 +966{academy.phone}</a>}
+          {academy.description && <p style={{ fontSize: 12, color: 'var(--text2)', margin: '4px 0 0' }}>{academy.description}</p>}
         </div>
 
-        <h2 className="text-sm font-bold text-[#1A1A1A]">البرامج التدريبية ({programs.length})</h2>
+        <h2 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', margin: 0 }}>البرامج التدريبية ({programs.length})</h2>
 
         {programs.length === 0 ? (
-          <div className="text-center py-10 text-[#6B7280]">
-            <p className="text-4xl mb-2">🏃</p><p className="text-sm">لا توجد برامج متاحة حالياً</p>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>
+            <p style={{ fontSize: 40, marginBottom: 8 }}>🏃</p><p style={{ fontSize: 13 }}>لا توجد برامج متاحة حالياً</p>
           </div>
         ) : programs.map((p) => {
           const full = p.current_students >= p.max_students
           return (
-            <div key={p.id} className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
-              <div className="flex items-start justify-between mb-2">
+            <div key={p.id} style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
                 <div>
-                  <p className="font-bold text-[#1A1A1A]">{p.name}</p>
-                  <p className="text-xs text-[#6B7280]">{sportLabel[p.sport_type]}</p>
-                  {p.coach_name && <p className="text-xs text-[#9CA3AF]">المدرب: {p.coach_name}</p>}
-                  {(p.age_min || p.age_max) && <p className="text-xs text-[#9CA3AF]">للأعمار {p.age_min ?? '?'} – {p.age_max ?? '?'} سنة</p>}
+                  <p style={{ fontWeight: 700, color: 'var(--text)', margin: '0 0 2px' }}>{p.name}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 2px' }}>{sportLabel[p.sport_type]}</p>
+                  {p.coach_name && <p style={{ fontSize: 12, color: 'var(--text3)', margin: '0 0 2px' }}>المدرب: {p.coach_name}</p>}
+                  {(p.age_min || p.age_max) && <p style={{ fontSize: 12, color: 'var(--text3)', margin: 0 }}>للأعمار {p.age_min ?? '?'} – {p.age_max ?? '?'} سنة</p>}
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${full ? 'bg-red-50 text-red-500' : 'bg-[#E8F5F1] text-[#0F6E56]'}`}>
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: full ? 'var(--danger-dim)' : 'var(--primary-dim)', color: full ? 'var(--danger)' : 'var(--primary)' }}>
                   {full ? 'مكتمل' : `${p.max_students - p.current_students} مقعد`}
                 </span>
               </div>
 
-              <div className="w-full bg-[#F8F9FA] rounded-full h-1.5 mb-3">
-                <div className="bg-[#0F6E56] h-1.5 rounded-full" style={{ width: `${Math.min((p.current_students / p.max_students) * 100, 100)}%` }} />
+              <div style={{ width: '100%', background: 'var(--bg)', borderRadius: 20, height: 6, marginBottom: 12 }}>
+                <div style={{ background: 'var(--primary)', height: 6, borderRadius: 20, width: `${Math.min((p.current_students / p.max_students) * 100, 100)}%` }} />
               </div>
 
               {!full && (
-                <div className="flex gap-2">
+                <div style={{ display: 'flex', gap: 8 }}>
                   {(p.pricing_type === 'monthly' || p.pricing_type === 'both') && p.monthly_price_sar && (
                     <button onClick={() => subscribe(p, 'monthly')} disabled={subscribing === p.id}
-                      className="flex-1 bg-[#0F6E56] text-white text-xs py-2.5 rounded-xl font-medium disabled:opacity-50">
+                      style={{ flex: 1, background: 'var(--primary)', color: 'var(--primary-fg)', fontSize: 12, padding: '10px', borderRadius: 12, fontWeight: 600, border: 'none', cursor: 'pointer', opacity: subscribing === p.id ? 0.5 : 1 }}>
                       {subscribing === p.id ? '...' : `${p.monthly_price_sar} ر/شهر`}
                     </button>
                   )}
                   {(p.pricing_type === 'program' || p.pricing_type === 'both') && p.program_price_sar && (
                     <button onClick={() => subscribe(p, 'program')} disabled={subscribing === p.id}
-                      className="flex-1 border border-[#0F6E56] text-[#0F6E56] text-xs py-2.5 rounded-xl font-medium disabled:opacity-50">
+                      style={{ flex: 1, border: '1px solid var(--primary)', color: 'var(--primary)', fontSize: 12, padding: '10px', borderRadius: 12, fontWeight: 600, background: 'transparent', cursor: 'pointer', opacity: subscribing === p.id ? 0.5 : 1 }}>
                       {subscribing === p.id ? '...' : `${p.program_price_sar} ر/برنامج`}
                     </button>
                   )}
@@ -119,7 +119,7 @@ export default function AcademyDetailPage() {
           )
         })}
 
-        {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+        {error && <p style={{ color: 'var(--danger)', fontSize: 12, textAlign: 'center' }}>{error}</p>}
       </div>
     </div>
   )

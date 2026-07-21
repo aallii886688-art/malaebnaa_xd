@@ -10,11 +10,11 @@ const sportLabel: Record<string, string> = {
   basketball:'🏀 كرة سلة', volleyball:'🏐 كرة طائرة', other:'🏅 أخرى',
 }
 
-const statusInfo: Record<string, { label: string; color: string }> = {
-  upcoming:     { label: 'قادمة',           color: 'bg-blue-50 text-blue-600' },
-  registration: { label: 'تسجيل مفتوح',    color: 'bg-[#E8F5F1] text-[#0F6E56]' },
-  ongoing:      { label: 'جارية',           color: 'bg-yellow-50 text-yellow-600' },
-  completed:    { label: 'منتهية',          color: 'bg-gray-100 text-gray-500' },
+const statusInfo: Record<string, { label: string; bg: string; color: string }> = {
+  upcoming:     { label: 'قادمة',        bg: 'rgba(59,130,246,0.12)', color: '#3b82f6' },
+  registration: { label: 'تسجيل مفتوح', bg: 'var(--primary-dim)',    color: 'var(--primary)' },
+  ongoing:      { label: 'جارية',        bg: 'rgba(234,179,8,0.12)',  color: '#ca8a04' },
+  completed:    { label: 'منتهية',       bg: 'var(--bg)',             color: 'var(--text3)' },
 }
 
 export default function PlayerTournamentsPage() {
@@ -31,46 +31,50 @@ export default function PlayerTournamentsPage() {
   }, [filter])
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-xl">←</button>
-        <div><p className="text-xs opacity-80">استكشاف</p><h1 className="text-lg font-bold">البطولات</h1></div>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
+        <div>
+          <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>استكشاف</p>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>البطولات</h1>
+        </div>
       </header>
 
-      <div className="flex gap-2 px-4 py-3 overflow-x-auto">
+      <div style={{ display: 'flex', gap: 8, padding: '12px 16px', overflowX: 'auto' }} className="no-scrollbar">
         {([['all','الكل'],['registration','تسجيل مفتوح'],['ongoing','جارية']] as [string,string][]).map(([v,l]) => (
           <button key={v} onClick={() => { setFilter(v as typeof filter); setLoading(true) }}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${filter === v ? 'bg-[#0F6E56] text-white' : 'bg-white border border-[#E8ECEF] text-[#6B7280]'}`}>
+            style={{ padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', background: filter === v ? 'var(--primary)' : 'var(--card)', border: `1px solid ${filter === v ? 'var(--primary)' : 'var(--border)'}`, color: filter === v ? 'var(--primary-fg)' : 'var(--text2)', cursor: 'pointer' }}>
             {l}
           </button>
         ))}
       </div>
 
-      <div className="px-4 pb-6 space-y-3">
-        {loading ? <div className="text-center py-10 text-[#6B7280]">جاري التحميل...</div>
+      <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {loading ? <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>جاري التحميل...</div>
           : tournaments.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-5xl mb-2">🏆</p><p className="text-sm text-[#6B7280]">لا توجد بطولات متاحة</p>
+            <div style={{ textAlign: 'center', padding: '64px 0' }}>
+              <p style={{ fontSize: 48, marginBottom: 8 }}>🏆</p><p style={{ fontSize: 13, color: 'var(--text2)' }}>لا توجد بطولات متاحة</p>
             </div>
           ) : tournaments.map((t) => {
-            const s = statusInfo[t.status] ?? { label: t.status, color: 'bg-gray-100 text-gray-500' }
+            const s = statusInfo[t.status] ?? { label: t.status, bg: 'var(--bg)', color: 'var(--text3)' }
             return (
               <button key={t.id} onClick={() => router.push(`/player/tournaments/${t.id}`)}
-                className="w-full bg-white rounded-2xl border border-[#E8ECEF] p-4 text-right">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="font-bold text-[#1A1A1A]">{t.name}</p>
-                    <p className="text-xs text-[#6B7280] mt-0.5">{sportLabel[t.sport_type]}</p>
-                    <p className="text-xs text-[#6B7280]">📍 {t.city} · {t.max_teams} فريق</p>
-                    {t.age_group && <p className="text-xs text-[#9CA3AF]">🎯 {t.age_group}</p>}
-                    {t.registration_deadline && <p className="text-xs text-[#C17B1A]">⏰ آخر تسجيل: {new Date(t.registration_deadline).toLocaleDateString('ar-SA')}</p>}
-                    <p className={`text-xs mt-1 font-bold ${+t.registration_fee_sar === 0 ? 'text-[#0F6E56]' : 'text-[#1A1A1A]'}`}>
+                className="press"
+                style={{ width: '100%', background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, textAlign: 'right', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 700, color: 'var(--text)', margin: '0 0 2px' }}>{t.name}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 2px' }}>{sportLabel[t.sport_type]}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 2px' }}>📍 {t.city} · {t.max_teams} فريق</p>
+                    {t.age_group && <p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 2px' }}>🎯 {t.age_group}</p>}
+                    {t.registration_deadline && <p style={{ fontSize: 11, color: 'var(--gold)', margin: '0 0 2px' }}>⏰ آخر تسجيل: {new Date(t.registration_deadline).toLocaleDateString('ar-SA')}</p>}
+                    <p style={{ fontSize: 12, marginTop: 2, fontWeight: 700, color: +t.registration_fee_sar === 0 ? 'var(--primary)' : 'var(--text)', margin: 0 }}>
                       {+t.registration_fee_sar === 0 ? '🆓 مجاني' : `${t.registration_fee_sar} ريال / فريق`}
                     </p>
                   </div>
-                  <div className="flex flex-col items-end gap-2 mr-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${s.color}`}>{s.label}</span>
-                    <span className="text-[#9CA3AF] text-sm">←</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginRight: 8 }}>
+                    <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: s.bg, color: s.color }}>{s.label}</span>
+                    <span style={{ color: 'var(--text3)', fontSize: 14 }}>←</span>
                   </div>
                 </div>
               </button>

@@ -39,13 +39,8 @@ type NewField = {
 }
 
 const defaultNew: NewField = {
-  name_ar: '',
-  field_type: 'text',
-  is_required_default: false,
-  applies_to: [],
-  use_in: [],
-  placeholder_ar: '',
-  sort_order: 0,
+  name_ar: '', field_type: 'text', is_required_default: false,
+  applies_to: [], use_in: [], placeholder_ar: '', sort_order: 0,
 }
 
 export default function AdminFieldsPage() {
@@ -59,10 +54,7 @@ export default function AdminFieldsPage() {
 
   const load = async () => {
     const supabase = createClient()
-    const { data } = await supabase
-      .from('field_definitions')
-      .select('*, field_categories(name_ar)')
-      .order('sort_order')
+    const { data } = await supabase.from('field_definitions').select('*, field_categories(name_ar)').order('sort_order')
     setFields((data as FieldDef[]) ?? [])
     setLoading(false)
   }
@@ -80,79 +72,72 @@ export default function AdminFieldsPage() {
     setSaving(true); setError('')
     const supabase = createClient()
     const { error: err } = await supabase.from('field_definitions').insert({
-      name_ar: form.name_ar,
-      field_type: form.field_type,
+      name_ar: form.name_ar, field_type: form.field_type,
       is_required_default: form.is_required_default,
       applies_to: form.applies_to.length ? form.applies_to : null,
       use_in: form.use_in,
       placeholder_ar: form.placeholder_ar || null,
       sort_order: form.sort_order,
-      // No category_id for now (can be added later)
     })
     if (err) { setError(err.message); setSaving(false); return }
-    setShowForm(false)
-    setForm(defaultNew)
-    await load()
-    setSaving(false)
+    setShowForm(false); setForm(defaultNew)
+    await load(); setSaving(false)
   }
 
   const toggleArr = (key: 'applies_to' | 'use_in', val: string) => {
-    setForm((f) => ({
-      ...f,
-      [key]: f[key].includes(val) ? f[key].filter((x) => x !== val) : [...f[key], val],
-    }))
+    setForm((f) => ({ ...f, [key]: f[key].includes(val) ? f[key].filter((x) => x !== val) : [...f[key], val] }))
   }
 
+  const inputStyle = { width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'transparent', color: 'var(--text)', boxSizing: 'border-box' as const }
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-white text-xl">←</button>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#1a1a2e,#16213e)', padding: '52px 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff' }}>←</button>
           <div>
-            <p className="text-xs opacity-80">لوحة التحكم</p>
-            <h1 className="text-lg font-bold">إدارة الحقول</h1>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', margin: 0 }}>لوحة التحكم</p>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>إدارة الحقول</h1>
           </div>
         </div>
         <button onClick={() => setShowForm(true)}
-          className="bg-white text-[#0F6E56] text-sm font-bold px-3 py-1.5 rounded-xl">
+          style={{ background: '#fff', color: 'var(--primary)', fontSize: 13, fontWeight: 700, padding: '7px 14px', borderRadius: 14, border: 'none', cursor: 'pointer' }}>
           + إضافة
         </button>
       </header>
 
-      <div className="px-4 py-4 space-y-2">
+      <div style={{ padding: '12px 16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {loading ? (
-          <div className="text-center py-10 text-[#6B7280]">جاري التحميل...</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>جاري التحميل...</div>
         ) : fields.length === 0 ? (
-          <div className="text-center py-10 text-[#6B7280]">
-            <p className="text-4xl mb-2">📋</p>
-            <p className="text-sm">لا توجد حقول مخصصة بعد</p>
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <p style={{ fontSize: 40, marginBottom: 8 }}>📋</p>
+            <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>لا توجد حقول مخصصة بعد</p>
             <button onClick={() => setShowForm(true)}
-              className="mt-3 bg-[#0F6E56] text-white px-4 py-2 rounded-xl text-sm">
+              style={{ background: 'var(--primary)', color: 'var(--primary-fg)', padding: '10px 20px', borderRadius: 14, border: 'none', cursor: 'pointer', fontSize: 13 }}>
               أضف أول حقل
             </button>
           </div>
         ) : (
           fields.map((f) => (
-            <div key={f.id} className="bg-white rounded-xl border border-[#E8ECEF] p-4">
-              <div className="flex items-start justify-between">
+            <div key={f.id} style={{ background: 'var(--card)', borderRadius: 14, border: '1px solid var(--border)', padding: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                  <p className="font-semibold text-sm text-[#1A1A1A]">{f.name_ar}</p>
-                  <p className="text-xs text-[#6B7280] mt-0.5">
+                  <p style={{ fontWeight: 600, color: 'var(--text)', fontSize: 13, margin: '0 0 2px' }}>{f.name_ar}</p>
+                  <p style={{ fontSize: 11, color: 'var(--text2)', margin: '0 0 2px' }}>
                     {fieldTypeLabel[f.field_type] ?? f.field_type}
                     {f.is_required_default && ' · مطلوب'}
                   </p>
                   {f.applies_to && f.applies_to.length > 0 && (
-                    <p className="text-xs text-[#9CA3AF] mt-0.5">
-                      {f.applies_to.map((a) => activityLabel[a]).join('، ')}
-                    </p>
+                    <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>{f.applies_to.map((a) => activityLabel[a]).join('، ')}</p>
                   )}
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${f.is_active ? 'bg-[#E8F5F1] text-[#0F6E56]' : 'bg-gray-100 text-gray-400'}`}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: f.is_active ? 'var(--primary-dim)' : 'var(--bg)', color: f.is_active ? 'var(--primary)' : 'var(--text3)' }}>
                     {f.is_active ? 'مفعّل' : 'معطّل'}
                   </span>
                   <button onClick={() => toggle(f.id, f.is_active)}
-                    className="text-[10px] text-[#6B7280] underline">
+                    style={{ fontSize: 10, color: 'var(--text2)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
                     {f.is_active ? 'تعطيل' : 'تفعيل'}
                   </button>
                 </div>
@@ -162,66 +147,61 @@ export default function AdminFieldsPage() {
         )}
       </div>
 
-      {/* Add field sheet */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-t-2xl p-5 w-full max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-bold text-[#1A1A1A] mb-4">إضافة حقل جديد</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', zIndex: 50 }} onClick={() => setShowForm(false)}>
+          <div style={{ background: 'var(--card)', borderRadius: '20px 20px 0 0', padding: 20, width: '100%', maxHeight: '85dvh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>إضافة حقل جديد</h3>
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">اسم الحقل *</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>اسم الحقل *</label>
             <input value={form.name_ar} onChange={(e) => setForm((f) => ({ ...f, name_ar: e.target.value }))}
-              placeholder="مثال: عنوان الملعب"
-              className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56] mb-3" />
+              placeholder="مثال: عنوان الملعب" style={{ ...inputStyle, marginBottom: 12 }} />
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">نوع الحقل</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>نوع الحقل</label>
             <select value={form.field_type} onChange={(e) => setForm((f) => ({ ...f, field_type: e.target.value }))}
-              className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56] mb-3">
-              {Object.entries(fieldTypeLabel).map(([val, lbl]) => (
-                <option key={val} value={val}>{lbl}</option>
-              ))}
+              style={{ ...inputStyle, marginBottom: 12, background: 'var(--card)' }}>
+              {Object.entries(fieldTypeLabel).map(([val, lbl]) => <option key={val} value={val}>{lbl}</option>)}
             </select>
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">نص توضيحي</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>نص توضيحي</label>
             <input value={form.placeholder_ar} onChange={(e) => setForm((f) => ({ ...f, placeholder_ar: e.target.value }))}
-              placeholder="مثال: أدخل العنوان كاملاً"
-              className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56] mb-3" />
+              placeholder="مثال: أدخل العنوان كاملاً" style={{ ...inputStyle, marginBottom: 12 }} />
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-2">يظهر لـ (النشاط)</label>
-            <div className="flex flex-wrap gap-2 mb-3">
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>يظهر لـ (النشاط)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
               {Object.entries(activityLabel).map(([val, lbl]) => (
                 <button key={val} onClick={() => toggleArr('applies_to', val)}
-                  className={`text-xs px-3 py-1.5 rounded-full border ${form.applies_to.includes(val) ? 'bg-[#0F6E56] text-white border-[#0F6E56]' : 'border-[#E8ECEF] text-[#6B7280]'}`}>
+                  style={{ fontSize: 12, padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', background: form.applies_to.includes(val) ? 'var(--primary)' : 'var(--bg)', color: form.applies_to.includes(val) ? 'var(--primary-fg)' : 'var(--text2)', outline: form.applies_to.includes(val) ? 'none' : '1px solid var(--border)' }}>
                   {lbl}
                 </button>
               ))}
             </div>
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-2">يُستخدم في</label>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {['registration', 'facility_profile', 'academy_profile', 'booking'].map((val) => (
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>يُستخدم في</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+              {[{ val: 'registration', lbl: 'التسجيل' }, { val: 'facility_profile', lbl: 'ملف ملعب' }, { val: 'academy_profile', lbl: 'ملف أكاديمية' }, { val: 'booking', lbl: 'الحجز' }].map(({ val, lbl }) => (
                 <button key={val} onClick={() => toggleArr('use_in', val)}
-                  className={`text-xs px-3 py-1.5 rounded-full border ${form.use_in.includes(val) ? 'bg-[#0F6E56] text-white border-[#0F6E56]' : 'border-[#E8ECEF] text-[#6B7280]'}`}>
-                  {val === 'registration' ? 'التسجيل' : val === 'facility_profile' ? 'ملف ملعب' : val === 'academy_profile' ? 'ملف أكاديمية' : 'الحجز'}
+                  style={{ fontSize: 12, padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', background: form.use_in.includes(val) ? 'var(--primary)' : 'var(--bg)', color: form.use_in.includes(val) ? 'var(--primary-fg)' : 'var(--text2)', outline: form.use_in.includes(val) ? 'none' : '1px solid var(--border)' }}>
+                  {lbl}
                 </button>
               ))}
             </div>
 
-            <label className="flex items-center gap-2 mb-4 cursor-pointer">
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
               <input type="checkbox" checked={form.is_required_default}
                 onChange={(e) => setForm((f) => ({ ...f, is_required_default: e.target.checked }))}
-                className="w-4 h-4 accent-[#0F6E56]" />
-              <span className="text-sm text-[#1A1A1A]">حقل إلزامي بشكل افتراضي</span>
+                style={{ width: 16, height: 16, accentColor: 'var(--primary)' }} />
+              <span style={{ fontSize: 13, color: 'var(--text)' }}>حقل إلزامي بشكل افتراضي</span>
             </label>
 
-            {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+            {error && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12 }}>{error}</p>}
 
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={save} disabled={saving}
-                className="flex-1 bg-[#0F6E56] text-white py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50">
+                style={{ flex: 1, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '11px', borderRadius: 14, fontWeight: 600, fontSize: 13, border: 'none', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
                 {saving ? 'جاري الحفظ...' : 'حفظ الحقل'}
               </button>
               <button onClick={() => { setShowForm(false); setForm(defaultNew) }}
-                className="flex-1 border border-[#E8ECEF] py-2.5 rounded-xl text-sm">
+                style={{ flex: 1, border: '1px solid var(--border)', padding: '11px', borderRadius: 14, fontSize: 13, background: 'transparent', color: 'var(--text)', cursor: 'pointer' }}>
                 إلغاء
               </button>
             </div>

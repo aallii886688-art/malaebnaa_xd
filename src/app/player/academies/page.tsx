@@ -25,40 +25,45 @@ export default function PlayerAcademiesPage() {
   const filtered = academies.filter((a) => !search || a.name.includes(search) || a.city.includes(search))
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-xl">←</button>
-        <div><p className="text-xs opacity-80">استكشاف</p><h1 className="text-lg font-bold">الأكاديميات</h1></div>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
+        <div>
+          <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>استكشاف</p>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>الأكاديميات</h1>
+        </div>
       </header>
 
-      <div className="px-4 pt-3">
-        <div className="bg-white rounded-xl border border-[#E8ECEF] px-4 py-3 flex items-center gap-2">
-          <span className="text-[#6B7280]">🔍</span>
+      <div style={{ padding: '12px 16px 0' }}>
+        <div style={{ background: 'var(--card)', borderRadius: 14, border: '1px solid var(--border)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ color: 'var(--text2)' }}>🔍</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="ابحث عن أكاديمية..." className="flex-1 text-sm focus:outline-none" />
+            placeholder="ابحث عن أكاديمية..."
+            style={{ flex: 1, fontSize: 13, outline: 'none', background: 'transparent', border: 'none', color: 'var(--text)' }} />
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-3">
-        {loading ? <div className="text-center py-10 text-[#6B7280]">جاري التحميل...</div>
+      <div style={{ padding: '16px 16px 80px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {loading ? <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>جاري التحميل...</div>
           : filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-5xl mb-2">🏅</p>
-              <p className="text-sm text-[#6B7280]">لا توجد أكاديميات متاحة</p>
+            <div style={{ textAlign: 'center', padding: '64px 0' }}>
+              <p style={{ fontSize: 48, marginBottom: 8 }}>🏅</p>
+              <p style={{ fontSize: 13, color: 'var(--text2)' }}>لا توجد أكاديميات متاحة</p>
             </div>
           ) : filtered.map((a) => (
             <button key={a.id} onClick={() => router.push(`/player/academies/${a.id}`)}
-              className="w-full bg-white rounded-2xl border border-[#E8ECEF] p-4 text-right">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="font-bold text-[#1A1A1A]">{a.name}</p>
-                  <p className="text-xs text-[#6B7280] mt-0.5">{a.sport_types.map((s) => sportLabel[s]).join(' ')}</p>
-                  <p className="text-xs text-[#6B7280]">📍 {a.city}</p>
-                  {a.description && <p className="text-xs text-[#9CA3AF] mt-1 line-clamp-1">{a.description}</p>}
+              className="press"
+              style={{ width: '100%', background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, textAlign: 'right', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 700, color: 'var(--text)', margin: '0 0 2px' }}>{a.name}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 2px' }}>{a.sport_types.map((s) => sportLabel[s]).join(' ')}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }}>📍 {a.city}</p>
+                  {a.description && <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>{a.description}</p>}
                 </div>
-                <div className="flex flex-col items-end gap-2 mr-2">
-                  {a.reviews_count > 0 && <span className="text-xs font-medium text-[#C17B1A]">⭐ {a.rating}</span>}
-                  <span className="text-[#9CA3AF] text-sm">←</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginRight: 8 }}>
+                  {a.reviews_count > 0 && <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--gold)' }}>⭐ {a.rating}</span>}
+                  <span style={{ color: 'var(--text3)', fontSize: 14 }}>←</span>
                 </div>
               </div>
             </button>

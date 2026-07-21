@@ -30,8 +30,7 @@ export default async function PartnerDashboard() {
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', paddingBottom: 32 }}>
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#0F6E56,#1A9870)', padding: '52px 20px 28px' }}>
+      <div style={{ background: 'linear-gradient(135deg,#0F6E56,#1A9870)', padding: '20px 20px 28px' }}>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>لوحة الشريك</p>
         <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, marginTop: 4 }}>{profile?.full_name}</h1>
       </div>

@@ -57,8 +57,11 @@ export default function LoginPage() {
     <div style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'var(--bg)' }}>
       <div style={{ width: '100%', maxWidth: 380 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 48, marginBottom: 8 }}>⚽</div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)', margin: 0 }}>ملاعبنا</h1>
+          <a href="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
+            <div style={{ fontSize: 48, marginBottom: 8 }}>⚽</div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)', margin: 0 }}>ملاعبنا</h1>
+          </a>
+          <p style={{ color: 'var(--text3)', fontSize: 12, marginTop: 4 }}>اضغط الشعار للعودة للرئيسية</p>
         </div>
 
         <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 24 }}>

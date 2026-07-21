@@ -4,18 +4,18 @@ import { useRouter } from 'next/navigation'
 export default function AdminCommissionsPage() {
   const router = useRouter()
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white text-xl">←</button>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#1a1a2e,#16213e)', padding: '52px 16px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff' }}>←</button>
         <div>
-          <p className="text-xs opacity-80">لوحة التحكم</p>
-          <h1 className="text-lg font-bold">إدارة العمولات</h1>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', margin: 0 }}>لوحة التحكم</p>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>إدارة العمولات</h1>
         </div>
       </header>
-      <div className="flex flex-col items-center justify-center h-64 gap-3 px-4">
-        <span className="text-5xl">💰</span>
-        <p className="text-base font-bold text-[#1A1A1A]">قيد الإعداد</p>
-        <p className="text-sm text-[#6B7280] text-center">سيتم إطلاق نظام العمولات قريباً بعد تفعيل بوابة الدفع</p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 256, gap: 12, padding: '0 16px' }}>
+        <span style={{ fontSize: 48 }}>💰</span>
+        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', margin: 0 }}>قيد الإعداد</p>
+        <p style={{ fontSize: 13, color: 'var(--text2)', textAlign: 'center', margin: 0 }}>سيتم إطلاق نظام العمولات قريباً بعد تفعيل بوابة الدفع</p>
       </div>
     </div>
   )

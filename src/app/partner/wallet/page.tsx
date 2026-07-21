@@ -28,6 +28,11 @@ type Settlement = {
 
 const banks = ['البنك الأهلي', 'بنك الراجحي', 'بنك الرياض', 'البنك السعودي الفرنسي', 'بنك البلاد', 'بنك الإنماء', 'بنك الجزيرة', 'سامبا', 'غيره']
 
+const settlementStatus: Record<string, string> = {
+  requested: 'بانتظار المراجعة', approved: 'موافق عليه',
+  processing: 'قيد التحويل', completed: 'مكتمل', rejected: 'مرفوض',
+}
+
 export default function PartnerWalletPage() {
   const router = useRouter()
   const [wallet, setWallet] = useState<Wallet | null>(null)
@@ -91,65 +96,58 @@ export default function PartnerWalletPage() {
     setSubmitting(false)
   }
 
-  const txColor = (type: string) => type === 'credit' ? 'text-[#0F6E56]' : 'text-red-500'
-  const txSign  = (type: string) => type === 'credit' ? '+' : '-'
+  const inputStyle = { width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'var(--card)', color: 'var(--text)', boxSizing: 'border-box' as const }
 
-  const settlementStatus: Record<string, string> = {
-    requested: 'بانتظار المراجعة', approved: 'موافق عليه',
-    processing: 'قيد التحويل', completed: 'مكتمل', rejected: 'مرفوض',
-  }
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>
+  if (loading) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>جاري التحميل...</div>
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pb-10">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-xl">←</button>
-        <div><p className="text-xs opacity-80">الشريك</p><h1 className="text-lg font-bold">محفظتي</h1></div>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)', paddingBottom: 40 }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
+        <div>
+          <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>الشريك</p>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>محفظتي</h1>
+        </div>
       </header>
 
-      <div className="px-4 py-4 space-y-4">
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* بطاقة الرصيد */}
-        <div className="bg-[#0F6E56] rounded-2xl p-5 text-white">
-          <p className="text-xs opacity-80 mb-1">الرصيد المتاح</p>
-          <p className="text-4xl font-bold mb-4">{wallet?.balance_sar?.toFixed(2) ?? '0.00'} <span className="text-lg">ر.س</span></p>
-          <div className="grid grid-cols-2 gap-3 border-t border-white/20 pt-3">
+        <div style={{ background: 'var(--primary)', borderRadius: 20, padding: 20, color: 'var(--primary-fg)' }}>
+          <p style={{ fontSize: 12, opacity: 0.8, margin: '0 0 4px' }}>الرصيد المتاح</p>
+          <p style={{ fontSize: 36, fontWeight: 800, margin: '0 0 16px' }}>{wallet?.balance_sar?.toFixed(2) ?? '0.00'} <span style={{ fontSize: 16, fontWeight: 400 }}>ر.س</span></p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 12 }}>
             <div>
-              <p className="text-xs opacity-70">إجمالي الأرباح</p>
-              <p className="font-bold">{wallet?.total_earned_sar?.toFixed(2) ?? '0.00'}</p>
+              <p style={{ fontSize: 11, opacity: 0.7, margin: '0 0 2px' }}>إجمالي الأرباح</p>
+              <p style={{ fontWeight: 700, margin: 0 }}>{wallet?.total_earned_sar?.toFixed(2) ?? '0.00'}</p>
             </div>
             <div>
-              <p className="text-xs opacity-70">إجمالي المسحوب</p>
-              <p className="font-bold">{wallet?.total_settled_sar?.toFixed(2) ?? '0.00'}</p>
+              <p style={{ fontSize: 11, opacity: 0.7, margin: '0 0 2px' }}>إجمالي المسحوب</p>
+              <p style={{ fontWeight: 700, margin: 0 }}>{wallet?.total_settled_sar?.toFixed(2) ?? '0.00'}</p>
             </div>
           </div>
         </div>
 
-        {/* زر السحب */}
         {(wallet?.balance_sar ?? 0) > 0 && (
           <button onClick={() => setShowWithdraw(true)}
-            className="w-full bg-white border-2 border-[#0F6E56] text-[#0F6E56] py-3 rounded-2xl font-bold text-sm">
+            style={{ width: '100%', border: '2px solid var(--primary)', color: 'var(--primary)', background: 'var(--primary-dim)', padding: '12px', borderRadius: 20, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
             💸 طلب سحب الأرباح
           </button>
         )}
 
-        {msg && <p className={`text-xs text-center ${msg.includes('✓') ? 'text-[#0F6E56]' : 'text-red-500'}`}>{msg}</p>}
+        {msg && <p style={{ fontSize: 12, textAlign: 'center', color: msg.includes('✓') ? 'var(--primary)' : 'var(--danger)' }}>{msg}</p>}
 
-        {/* سجل الحركات */}
         {transactions.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
-            <h2 className="text-sm font-bold text-[#1A1A1A] mb-3">آخر الحركات</h2>
-            <div className="space-y-3">
+          <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+            <h2 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', margin: '0 0 12px' }}>آخر الحركات</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {transactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between">
+                <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
-                    <p className="text-xs font-medium text-[#1A1A1A]">{tx.description_ar}</p>
-                    <p className="text-[10px] text-[#9CA3AF]">
-                      {new Date(tx.created_at).toLocaleDateString('ar-SA')}
-                    </p>
+                    <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: '0 0 2px' }}>{tx.description_ar}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>{new Date(tx.created_at).toLocaleDateString('ar-SA')}</p>
                   </div>
-                  <span className={`text-sm font-bold ${txColor(tx.type)}`}>
-                    {txSign(tx.type)}{tx.amount_sar} ر
+                  <span style={{ fontSize: 13, fontWeight: 700, color: tx.type === 'credit' ? 'var(--primary)' : 'var(--danger)' }}>
+                    {tx.type === 'credit' ? '+' : '-'}{tx.amount_sar} ر
                   </span>
                 </div>
               ))}
@@ -157,18 +155,17 @@ export default function PartnerWalletPage() {
           </div>
         )}
 
-        {/* طلبات التسوية السابقة */}
         {settlements.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
-            <h2 className="text-sm font-bold text-[#1A1A1A] mb-3">طلبات السحب</h2>
-            <div className="space-y-2">
-              {settlements.map((s) => (
-                <div key={s.id} className="flex items-center justify-between py-1.5 border-b border-[#F8F9FA] last:border-0">
+          <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+            <h2 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', margin: '0 0 12px' }}>طلبات السحب</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {settlements.map((s, i) => (
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: i < settlements.length - 1 ? 8 : 0, borderBottom: i < settlements.length - 1 ? '1px solid var(--border)' : 'none' }}>
                   <div>
-                    <p className="text-xs font-medium text-[#1A1A1A]">{s.amount_sar} ر.س</p>
-                    <p className="text-[10px] text-[#9CA3AF]">{new Date(s.created_at).toLocaleDateString('ar-SA')}</p>
+                    <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: '0 0 2px' }}>{s.amount_sar} ر.س</p>
+                    <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>{new Date(s.created_at).toLocaleDateString('ar-SA')}</p>
                   </div>
-                  <span className="text-xs text-[#6B7280]">{settlementStatus[s.status] ?? s.status}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text2)' }}>{settlementStatus[s.status] ?? s.status}</span>
                 </div>
               ))}
             </div>
@@ -176,53 +173,48 @@ export default function PartnerWalletPage() {
         )}
       </div>
 
-      {/* نافذة طلب السحب */}
       {showWithdraw && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={() => setShowWithdraw(false)}>
-          <div className="bg-white rounded-t-2xl p-5 w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-bold text-[#1A1A1A] mb-4">طلب سحب الأرباح</h3>
-            <p className="text-xs text-[#6B7280] mb-4">الرصيد المتاح: <strong className="text-[#0F6E56]">{wallet?.balance_sar?.toFixed(2)} ر.س</strong></p>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', zIndex: 50 }} onClick={() => setShowWithdraw(false)}>
+          <div style={{ background: 'var(--card)', borderRadius: '20px 20px 0 0', padding: 20, width: '100%', maxHeight: '90dvh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>طلب سحب الأرباح</h3>
+            <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 16px' }}>الرصيد المتاح: <strong style={{ color: 'var(--primary)' }}>{wallet?.balance_sar?.toFixed(2)} ر.س</strong></p>
 
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
-                <label className="block text-xs font-medium mb-1">المبلغ (ر.س) *</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>المبلغ (ر.س) *</label>
                 <input type="number" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                  placeholder={`أقصى ${wallet?.balance_sar?.toFixed(2)}`}
-                  max={wallet?.balance_sar ?? 0} min={1}
-                  className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]" dir="ltr" />
+                  placeholder={`أقصى ${wallet?.balance_sar?.toFixed(2)}`} max={wallet?.balance_sar ?? 0} min={1}
+                  style={{ ...inputStyle }} dir="ltr" />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1">البنك *</label>
-                <select value={form.bank_name} onChange={(e) => setForm((f) => ({ ...f, bank_name: e.target.value }))}
-                  className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]">
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>البنك *</label>
+                <select value={form.bank_name} onChange={(e) => setForm((f) => ({ ...f, bank_name: e.target.value }))} style={inputStyle}>
                   <option value="">اختر البنك</option>
                   {banks.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1">صاحب الحساب *</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>صاحب الحساب *</label>
                 <input value={form.account_holder} onChange={(e) => setForm((f) => ({ ...f, account_holder: e.target.value }))}
-                  placeholder="الاسم كما في البطاقة"
-                  className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]" />
+                  placeholder="الاسم كما في البطاقة" style={inputStyle} />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1">رقم IBAN *</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>رقم IBAN *</label>
                 <input value={form.iban} onChange={(e) => setForm((f) => ({ ...f, iban: e.target.value.toUpperCase() }))}
-                  placeholder="SA0000000000000000000000"
-                  className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56] font-mono"
+                  placeholder="SA0000000000000000000000" style={{ ...inputStyle, fontFamily: 'monospace' }}
                   dir="ltr" maxLength={24} />
               </div>
             </div>
 
-            {msg && <p className="text-red-500 text-xs mt-2">{msg}</p>}
+            {msg && <p style={{ color: 'var(--danger)', fontSize: 12, marginTop: 8 }}>{msg}</p>}
 
-            <div className="flex gap-2 mt-4">
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <button onClick={requestWithdraw} disabled={submitting}
-                className="flex-1 bg-[#0F6E56] text-white py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50">
+                style={{ flex: 1, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '11px', borderRadius: 14, fontWeight: 600, fontSize: 13, border: 'none', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
                 {submitting ? 'جاري الإرسال...' : 'إرسال الطلب'}
               </button>
               <button onClick={() => setShowWithdraw(false)}
-                className="flex-1 border border-[#E8ECEF] py-2.5 rounded-xl text-sm">
+                style={{ flex: 1, border: '1px solid var(--border)', padding: '11px', borderRadius: 14, fontSize: 13, background: 'transparent', color: 'var(--text)', cursor: 'pointer' }}>
                 إلغاء
               </button>
             </div>

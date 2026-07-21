@@ -34,52 +34,53 @@ export default function PartnerFacilitiesPage() {
   }, [router])
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-white text-xl">←</button>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
           <div>
-            <p className="text-xs opacity-80">الشريك</p>
-            <h1 className="text-lg font-bold">ملاعبي</h1>
+            <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>الشريك</p>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>ملاعبي</h1>
           </div>
         </div>
         <button onClick={() => router.push('/partner/facilities/new')}
-          className="bg-white text-[#0F6E56] text-sm font-bold px-3 py-1.5 rounded-xl">
+          style={{ background: 'var(--primary)', color: 'var(--primary-fg)', fontSize: 13, fontWeight: 700, padding: '6px 14px', borderRadius: 12, border: 'none', cursor: 'pointer' }}>
           + إضافة
         </button>
       </header>
 
-      <div className="px-4 py-4 space-y-3">
+      <div style={{ padding: '16px 16px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {loading ? (
-          <div className="text-center py-10 text-[#6B7280]">جاري التحميل...</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>جاري التحميل...</div>
         ) : facilities.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-5xl mb-3">🏟️</p>
-            <p className="text-sm font-semibold text-[#1A1A1A] mb-1">لا توجد ملاعب بعد</p>
-            <p className="text-xs text-[#6B7280] mb-4">أضف ملعبك الأول وابدأ باستقبال الحجوزات</p>
+          <div style={{ textAlign: 'center', padding: '64px 0' }}>
+            <p style={{ fontSize: 48, marginBottom: 12 }}>🏟️</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>لا توجد ملاعب بعد</p>
+            <p style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 16 }}>أضف ملعبك الأول وابدأ باستقبال الحجوزات</p>
             <button onClick={() => router.push('/partner/facilities/new')}
-              className="bg-[#0F6E56] text-white px-5 py-2.5 rounded-xl text-sm font-semibold">
+              style={{ background: 'var(--primary)', color: 'var(--primary-fg)', padding: '10px 20px', borderRadius: 14, fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer' }}>
               إضافة ملعب
             </button>
           </div>
         ) : (
           facilities.map((f) => (
             <button key={f.id} onClick={() => router.push(`/partner/facilities/${f.id}`)}
-              className="w-full bg-white rounded-2xl border border-[#E8ECEF] p-4 text-right">
-              <div className="flex items-start justify-between">
+              className="press"
+              style={{ width: '100%', background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, textAlign: 'right', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                  <p className="font-bold text-[#1A1A1A]">{f.name}</p>
-                  <p className="text-xs text-[#6B7280] mt-0.5">{sportLabel[f.sport_type]}</p>
-                  <p className="text-xs text-[#6B7280]">📍 {f.city}</p>
+                  <p style={{ fontWeight: 700, color: 'var(--text)', margin: '0 0 2px' }}>{f.name}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 2px' }}>{sportLabel[f.sport_type]}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }}>📍 {f.city}</p>
                   {f.reviews_count > 0 && (
-                    <p className="text-xs text-[#9CA3AF] mt-1">⭐ {f.rating} ({f.reviews_count} تقييم)</p>
+                    <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>⭐ {f.rating} ({f.reviews_count} تقييم)</p>
                   )}
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${f.is_active ? 'bg-[#E8F5F1] text-[#0F6E56]' : 'bg-red-50 text-red-500'}`}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: f.is_active ? 'var(--primary-dim)' : 'var(--danger-dim)', color: f.is_active ? 'var(--primary)' : 'var(--danger)' }}>
                     {f.is_active ? 'نشط' : 'موقوف'}
                   </span>
-                  <span className="text-[#9CA3AF] text-sm">←</span>
+                  <span style={{ color: 'var(--text3)', fontSize: 14 }}>←</span>
                 </div>
               </div>
             </button>

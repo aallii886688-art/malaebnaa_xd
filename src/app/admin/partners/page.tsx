@@ -19,11 +19,11 @@ const activityLabel: Record<string, string> = {
   tournament_manager: '🏆 منظم بطولة',
 }
 
-const statusLabel: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'معلق',    color: 'bg-yellow-50 text-yellow-600' },
-  approved:  { label: 'مقبول',   color: 'bg-[#E8F5F1] text-[#0F6E56]' },
-  rejected:  { label: 'مرفوض',  color: 'bg-red-50 text-red-500' },
-  suspended: { label: 'موقوف',  color: 'bg-gray-100 text-gray-500' },
+const statusStyle: Record<string, { label: string; bg: string; color: string }> = {
+  pending:   { label: 'معلق',   bg: 'rgba(234,179,8,0.12)', color: '#ca8a04' },
+  approved:  { label: 'مقبول',  bg: 'var(--primary-dim)',    color: 'var(--primary)' },
+  rejected:  { label: 'مرفوض', bg: 'var(--danger-dim)',     color: 'var(--danger)' },
+  suspended: { label: 'موقوف', bg: 'var(--bg)',             color: 'var(--text3)' },
 }
 
 export default function AdminPartnersPage() {
@@ -64,8 +64,7 @@ export default function AdminPartnersPage() {
       rejection_reason: rejectReason,
       reviewed_at: new Date().toISOString(),
     }).eq('id', rejectId)
-    setRejectId(null)
-    setRejectReason('')
+    setRejectId(null); setRejectReason('')
     await load()
     setActionLoading(null)
   }
@@ -73,85 +72,84 @@ export default function AdminPartnersPage() {
   const filtered = filter === 'all' ? roles : roles.filter((r) => r.status === filter)
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white text-xl">←</button>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#1a1a2e,#16213e)', padding: '52px 16px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff' }}>←</button>
         <div>
-          <p className="text-xs opacity-80">لوحة التحكم</p>
-          <h1 className="text-lg font-bold">طلبات الشركاء</h1>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', margin: 0 }}>لوحة التحكم</p>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>طلبات الشركاء</h1>
         </div>
       </header>
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 px-4 py-3 overflow-x-auto">
+      <div style={{ display: 'flex', gap: 8, padding: '12px 16px', overflowX: 'auto' }} className="no-scrollbar">
         {(['pending', 'approved', 'rejected', 'all'] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${filter === f ? 'bg-[#0F6E56] text-white' : 'bg-white border border-[#E8ECEF] text-[#6B7280]'}`}>
+            style={{ padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: filter === f ? 'var(--primary)' : 'var(--card)', color: filter === f ? 'var(--primary-fg)' : 'var(--text2)', border: filter === f ? 'none' : '1px solid var(--border)' } as React.CSSProperties}>
             {f === 'pending' ? 'معلقة' : f === 'approved' ? 'مقبولة' : f === 'rejected' ? 'مرفوضة' : 'الكل'}
             {' '}({f === 'all' ? roles.length : roles.filter((r) => r.status === f).length})
           </button>
         ))}
       </div>
 
-      <div className="px-4 pb-6 space-y-3">
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {loading ? (
-          <div className="text-center py-10 text-[#6B7280]">جاري التحميل...</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>جاري التحميل...</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-10 text-[#6B7280]">لا توجد طلبات</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>لا توجد طلبات</div>
         ) : (
-          filtered.map((r) => (
-            <div key={r.id} className="bg-white rounded-xl border border-[#E8ECEF] p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <p className="font-semibold text-sm text-[#1A1A1A]">{r.profiles?.full_name}</p>
-                  <p className="text-xs text-[#6B7280]" dir="ltr">{r.profiles?.phone}</p>
+          filtered.map((r) => {
+            const st = statusStyle[r.status] ?? { label: r.status, bg: 'var(--bg)', color: 'var(--text3)' }
+            return (
+              <div key={r.id} style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div>
+                    <p style={{ fontWeight: 600, color: 'var(--text)', fontSize: 13, margin: '0 0 2px' }}>{r.profiles?.full_name}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }} dir="ltr">{r.profiles?.phone}</p>
+                  </div>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: st.bg, color: st.color }}>{st.label}</span>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${statusLabel[r.status]?.color}`}>
-                  {statusLabel[r.status]?.label}
-                </span>
+
+                <p style={{ fontSize: 12, color: 'var(--text)', margin: '0 0 4px' }}>{activityLabel[r.activity]}</p>
+                <p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 12px' }}>{new Date(r.created_at).toLocaleDateString('ar-SA')}</p>
+
+                {r.rejection_reason && (
+                  <div style={{ background: 'var(--danger-dim)', borderRadius: 10, padding: '6px 10px', marginBottom: 12 }}>
+                    <p style={{ fontSize: 11, color: 'var(--danger)', margin: 0 }}>سبب الرفض: {r.rejection_reason}</p>
+                  </div>
+                )}
+
+                {r.status === 'pending' && (
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => approve(r.id)} disabled={actionLoading === r.id}
+                      style={{ flex: 1, background: 'var(--primary)', color: 'var(--primary-fg)', fontSize: 12, padding: '8px', borderRadius: 12, border: 'none', cursor: 'pointer', opacity: actionLoading === r.id ? 0.5 : 1 }}>
+                      {actionLoading === r.id ? '...' : '✓ قبول'}
+                    </button>
+                    <button onClick={() => setRejectId(r.id)}
+                      style={{ flex: 1, border: '1px solid var(--danger)', color: 'var(--danger)', fontSize: 12, padding: '8px', borderRadius: 12, background: 'transparent', cursor: 'pointer' }}>
+                      ✕ رفض
+                    </button>
+                  </div>
+                )}
               </div>
-
-              <p className="text-xs text-[#1A1A1A] mb-1">{activityLabel[r.activity]}</p>
-              <p className="text-[10px] text-[#9CA3AF] mb-3">
-                {new Date(r.created_at).toLocaleDateString('ar-SA')}
-              </p>
-
-              {r.rejection_reason && (
-                <p className="text-xs text-red-500 bg-red-50 rounded-lg p-2 mb-3">سبب الرفض: {r.rejection_reason}</p>
-              )}
-
-              {r.status === 'pending' && (
-                <div className="flex gap-2">
-                  <button onClick={() => approve(r.id)} disabled={actionLoading === r.id}
-                    className="flex-1 bg-[#0F6E56] text-white text-xs py-2 rounded-lg font-medium disabled:opacity-50">
-                    {actionLoading === r.id ? '...' : '✓ قبول'}
-                  </button>
-                  <button onClick={() => setRejectId(r.id)}
-                    className="flex-1 border border-red-500 text-red-500 text-xs py-2 rounded-lg font-medium">
-                    ✕ رفض
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
-      {/* Reject modal */}
       {rejectId && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={() => setRejectId(null)}>
-          <div className="bg-white rounded-t-2xl p-5 w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-bold text-[#1A1A1A] mb-3">سبب الرفض</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', zIndex: 50 }} onClick={() => setRejectId(null)}>
+          <div style={{ background: 'var(--card)', borderRadius: '20px 20px 0 0', padding: 20, width: '100%' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontWeight: 700, color: 'var(--text)', margin: '0 0 12px' }}>سبب الرفض</h3>
             <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="اكتب سبب الرفض..."
-              rows={3}
-              className="w-full border border-[#E8ECEF] rounded-xl p-3 text-sm focus:outline-none focus:border-[#0F6E56] mb-3" />
-            <div className="flex gap-2">
+              placeholder="اكتب سبب الرفض..." rows={3}
+              style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 14, padding: 12, fontSize: 13, outline: 'none', background: 'transparent', color: 'var(--text)', resize: 'none', boxSizing: 'border-box', marginBottom: 12 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={reject} disabled={!rejectReason.trim() || !!actionLoading}
-                className="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50">
+                style={{ flex: 1, background: 'var(--danger)', color: '#fff', padding: '11px', borderRadius: 14, fontWeight: 600, fontSize: 13, border: 'none', cursor: 'pointer', opacity: !rejectReason.trim() ? 0.5 : 1 }}>
                 تأكيد الرفض
               </button>
-              <button onClick={() => setRejectId(null)} className="flex-1 border border-[#E8ECEF] py-2.5 rounded-xl text-sm">
+              <button onClick={() => setRejectId(null)}
+                style={{ flex: 1, border: '1px solid var(--border)', padding: '11px', borderRadius: 14, fontSize: 13, background: 'transparent', color: 'var(--text)', cursor: 'pointer' }}>
                 إلغاء
               </button>
             </div>

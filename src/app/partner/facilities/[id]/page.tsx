@@ -25,7 +25,6 @@ export default function FacilityManagePage() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'info' | 'slots'>('info')
 
-  // slot form
   const [showSlotForm, setShowSlotForm] = useState(false)
   const [slotForm, setSlotForm] = useState({ day: 0, start: 8, end: 10, price: '' })
   const [slotSaving, setSlotSaving] = useState(false)
@@ -82,40 +81,39 @@ export default function FacilityManagePage() {
     setSlots((s) => s.map((x) => x.id === slotId ? { ...x, is_available: !current } : x))
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>
-  if (!facility) return <div className="min-h-screen flex items-center justify-center text-red-500">الملعب غير موجود</div>
+  if (loading) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>جاري التحميل...</div>
+  if (!facility) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)' }}>الملعب غير موجود</div>
 
   const slotsByDay = days.map((_, d) => ({ day: d, slots: slots.filter((s) => s.day_of_week === d) }))
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-white text-xl">←</button>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
           <div>
-            <p className="text-xs opacity-80">إدارة الملعب</p>
-            <h1 className="text-base font-bold">{facility.name}</h1>
+            <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>إدارة الملعب</p>
+            <h1 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{facility.name}</h1>
           </div>
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full ${facility.is_active ? 'bg-white/20 text-white' : 'bg-red-400/30 text-red-100'}`}>
+        <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, background: facility.is_active ? 'var(--primary-dim)' : 'var(--danger-dim)', color: facility.is_active ? 'var(--primary)' : 'var(--danger)' }}>
           {facility.is_active ? '🟢 نشط' : '🔴 موقوف'}
         </span>
       </header>
 
-      {/* Tabs */}
-      <div className="flex bg-white border-b border-[#E8ECEF]">
+      <div style={{ display: 'flex', background: 'var(--card)', borderBottom: '1px solid var(--border)' }}>
         {(['info', 'slots'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`flex-1 py-3 text-sm font-medium ${tab === t ? 'text-[#0F6E56] border-b-2 border-[#0F6E56]' : 'text-[#6B7280]'}`}>
+            style={{ flex: 1, padding: '12px', fontSize: 13, fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer', color: tab === t ? 'var(--primary)' : 'var(--text2)', borderBottom: tab === t ? '2px solid var(--primary)' : '2px solid transparent' }}>
             {t === 'info' ? '📋 المعلومات' : '🕐 الأوقات والأسعار'}
           </button>
         ))}
       </div>
 
-      <div className="px-4 py-4 pb-10 space-y-3">
+      <div style={{ padding: '16px 16px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {tab === 'info' ? (
           <>
-            <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-3">
+            <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
                 { label: 'المدينة', value: facility.city },
                 { label: 'الحي', value: facility.district },
@@ -124,53 +122,53 @@ export default function FacilityManagePage() {
                 { label: 'الوصف', value: facility.description },
               ].map(({ label, value, ltr }) => value ? (
                 <div key={label}>
-                  <p className="text-xs text-[#9CA3AF]">{label}</p>
-                  <p className="text-sm text-[#1A1A1A] mt-0.5" dir={ltr ? 'ltr' : undefined}>{value}</p>
+                  <p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 2px' }}>{label}</p>
+                  <p style={{ fontSize: 13, color: 'var(--text)', margin: 0 }} dir={ltr ? 'ltr' : undefined}>{value}</p>
                 </div>
               ) : null)}
             </div>
 
             <button onClick={toggleActive}
-              className={`w-full py-3 rounded-2xl font-semibold text-sm border ${facility.is_active ? 'border-red-300 text-red-500' : 'border-[#0F6E56] text-[#0F6E56]'}`}>
+              style={{ width: '100%', padding: '12px', borderRadius: 20, fontWeight: 700, fontSize: 13, background: 'transparent', cursor: 'pointer', border: `1px solid ${facility.is_active ? 'var(--danger)' : 'var(--primary)'}`, color: facility.is_active ? 'var(--danger)' : 'var(--primary)' }}>
               {facility.is_active ? '⏸ إيقاف الملعب مؤقتاً' : '▶ تفعيل الملعب'}
             </button>
           </>
         ) : (
           <>
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-[#6B7280]">{slots.length} وقت مضاف</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }}>{slots.length} وقت مضاف</p>
               <button onClick={() => setShowSlotForm(true)}
-                className="text-xs bg-[#0F6E56] text-white px-3 py-1.5 rounded-xl font-medium">
+                style={{ fontSize: 12, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '6px 14px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 600 }}>
                 + إضافة وقت
               </button>
             </div>
 
             {slots.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-4xl mb-2">🕐</p>
-                <p className="text-sm text-[#6B7280]">لم تضف أوقات بعد</p>
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <p style={{ fontSize: 40, marginBottom: 8 }}>🕐</p>
+                <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>لم تضف أوقات بعد</p>
                 <button onClick={() => setShowSlotForm(true)}
-                  className="mt-3 bg-[#0F6E56] text-white px-4 py-2 rounded-xl text-sm">
+                  style={{ background: 'var(--primary)', color: 'var(--primary-fg)', padding: '8px 16px', borderRadius: 12, fontSize: 13, border: 'none', cursor: 'pointer' }}>
                   أضف أول وقت
                 </button>
               </div>
             ) : (
               slotsByDay.filter((d) => d.slots.length > 0).map(({ day, slots: daySlots }) => (
-                <div key={day} className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
-                  <p className="text-sm font-bold text-[#1A1A1A] mb-3">{days[day]}</p>
-                  <div className="space-y-2">
+                <div key={day} style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 12 }}>{days[day]}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {daySlots.map((s) => (
-                      <div key={s.id} className="flex items-center justify-between border border-[#E8ECEF] rounded-xl px-3 py-2">
+                      <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px' }}>
                         <div>
-                          <p className="text-xs font-medium text-[#1A1A1A]" dir="ltr">{fmt(s.start_hour)} – {fmt(s.end_hour)}</p>
-                          <p className="text-xs text-[#0F6E56]">{s.price_sar} ريال</p>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', margin: 0 }} dir="ltr">{fmt(s.start_hour)} – {fmt(s.end_hour)}</p>
+                          <p style={{ fontSize: 12, color: 'var(--primary)', margin: 0 }}>{s.price_sar} ريال</p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <button onClick={() => toggleSlotAvail(s.id, s.is_available)}
-                            className={`text-[10px] px-2 py-0.5 rounded-full ${s.is_available ? 'bg-[#E8F5F1] text-[#0F6E56]' : 'bg-gray-100 text-gray-400'}`}>
+                            style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: s.is_available ? 'var(--primary-dim)' : 'var(--bg)', color: s.is_available ? 'var(--primary)' : 'var(--text3)', border: 'none', cursor: 'pointer' }}>
                             {s.is_available ? 'متاح' : 'مغلق'}
                           </button>
-                          <button onClick={() => deleteSlot(s.id)} className="text-red-400 text-xs">🗑</button>
+                          <button onClick={() => deleteSlot(s.id)} style={{ color: 'var(--danger)', fontSize: 12, background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑</button>
                         </div>
                       </div>
                     ))}
@@ -182,49 +180,48 @@ export default function FacilityManagePage() {
         )}
       </div>
 
-      {/* Add slot sheet */}
       {showSlotForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={() => setShowSlotForm(false)}>
-          <div className="bg-white rounded-t-2xl p-5 w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-bold text-[#1A1A1A] mb-4">إضافة وقت حجز</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', zIndex: 50 }} onClick={() => setShowSlotForm(false)}>
+          <div style={{ background: 'var(--card)', borderRadius: '20px 20px 0 0', padding: 20, width: '100%', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>إضافة وقت حجز</h3>
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">اليوم</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>اليوم</label>
             <select value={slotForm.day} onChange={(e) => setSlotForm((f) => ({ ...f, day: +e.target.value }))}
-              className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56] mb-3">
+              style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'var(--card)', color: 'var(--text)', marginBottom: 12, boxSizing: 'border-box' }}>
               {days.map((d, i) => <option key={i} value={i}>{d}</option>)}
             </select>
 
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
               <div>
-                <label className="block text-xs font-medium text-[#1A1A1A] mb-1">وقت البداية</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>وقت البداية</label>
                 <select value={slotForm.start} onChange={(e) => setSlotForm((f) => ({ ...f, start: +e.target.value }))}
-                  className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]">
+                  style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'var(--card)', color: 'var(--text)', boxSizing: 'border-box' }}>
                   {Array.from({ length: 24 }, (_, i) => <option key={i} value={i}>{fmt(i)}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#1A1A1A] mb-1">وقت الانتهاء</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>وقت الانتهاء</label>
                 <select value={slotForm.end} onChange={(e) => setSlotForm((f) => ({ ...f, end: +e.target.value }))}
-                  className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]">
+                  style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'var(--card)', color: 'var(--text)', boxSizing: 'border-box' }}>
                   {Array.from({ length: 24 }, (_, i) => i + 1).map((i) => <option key={i} value={i}>{fmt(i)}</option>)}
                 </select>
               </div>
             </div>
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">السعر (ريال)</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>السعر (ريال)</label>
             <input type="number" value={slotForm.price} onChange={(e) => setSlotForm((f) => ({ ...f, price: e.target.value }))}
               placeholder="مثال: 150"
-              className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56] mb-4" />
+              style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'transparent', color: 'var(--text)', boxSizing: 'border-box', marginBottom: 16 }} />
 
-            {slotError && <p className="text-red-500 text-xs mb-3">{slotError}</p>}
+            {slotError && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12 }}>{slotError}</p>}
 
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={addSlot} disabled={slotSaving}
-                className="flex-1 bg-[#0F6E56] text-white py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50">
+                style={{ flex: 1, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '10px', borderRadius: 14, fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer', opacity: slotSaving ? 0.5 : 1 }}>
                 {slotSaving ? 'جاري الحفظ...' : 'إضافة'}
               </button>
               <button onClick={() => { setShowSlotForm(false); setSlotError('') }}
-                className="flex-1 border border-[#E8ECEF] py-2.5 rounded-xl text-sm">
+                style={{ flex: 1, border: '1px solid var(--border)', padding: '10px', borderRadius: 14, fontSize: 13, background: 'transparent', color: 'var(--text2)', cursor: 'pointer' }}>
                 إلغاء
               </button>
             </div>

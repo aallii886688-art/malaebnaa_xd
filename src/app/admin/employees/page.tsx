@@ -19,27 +19,20 @@ export default function AdminEmployeesPage() {
   const [adding, setAdding] = useState(false)
   const [msg, setMsg] = useState('')
 
-  useEffect(() => {
-    loadAdmins()
-  }, [])
+  useEffect(() => { loadAdmins() }, [])
 
   const loadAdmins = async () => {
     const supabase = createClient()
-    const { data } = await supabase
-      .from('admin_users')
-      .select('*, profiles:user_id(full_name, phone)')
-      .order('created_at', { ascending: false })
+    const { data } = await supabase.from('admin_users').select('*, profiles:user_id(full_name, phone)').order('created_at', { ascending: false })
     setAdmins((data as AdminUser[]) ?? [])
     setLoading(false)
   }
 
   const addAdmin = async () => {
     if (!phone.trim()) return
-    setAdding(true)
-    setMsg('')
+    setAdding(true); setMsg('')
     const supabase = createClient()
     const digits = phone.replace(/\D/g, '').replace(/^0/, '')
-    const email = `${digits}@malaebnaa.internal`
     const { data: profile } = await supabase.from('profiles').select('id').eq('phone', `+966${digits}`).single()
     if (!profile) { setMsg('المستخدم غير موجود — تأكد من رقم الجوال'); setAdding(false); return }
     const { error } = await supabase.from('admin_users').insert({ user_id: profile.id, is_super_admin: false })
@@ -53,48 +46,47 @@ export default function AdminEmployeesPage() {
     setAdmins((prev) => prev.filter((a) => a.user_id !== userId))
   }
 
+  const inputStyle = { border: '1px solid var(--border)', borderRadius: 10, padding: '9px 12px', fontSize: 13, outline: 'none', background: 'var(--bg)', color: 'var(--text)' }
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white text-xl">←</button>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#1a1a2e,#16213e)', padding: '52px 16px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff' }}>←</button>
         <div>
-          <p className="text-xs opacity-80">لوحة التحكم</p>
-          <h1 className="text-lg font-bold">موظفو الإدارة</h1>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', margin: 0 }}>لوحة التحكم</p>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>موظفو الإدارة</h1>
         </div>
       </header>
 
-      <div className="px-4 py-4 space-y-4">
-        {/* Add admin */}
-        <div className="bg-white rounded-xl border border-[#E8ECEF] p-4 space-y-3">
-          <p className="text-sm font-bold text-[#1A1A1A]">إضافة مشرف</p>
-          <div className="flex gap-2">
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', margin: 0 }}>إضافة مشرف</p>
+          <div style={{ display: 'flex', gap: 8 }}>
             <input value={phone} onChange={(e) => setPhone(e.target.value)}
               placeholder="رقم الجوال (5XXXXXXXX)"
-              className="flex-1 border border-[#E8ECEF] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0F6E56]"
-              dir="ltr" />
+              style={{ flex: 1, ...inputStyle }} dir="ltr" />
             <button onClick={addAdmin} disabled={adding}
-              className="bg-[#0F6E56] text-white text-sm px-4 py-2 rounded-lg disabled:opacity-50">
+              style={{ background: 'var(--primary)', color: 'var(--primary-fg)', fontSize: 13, padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', opacity: adding ? 0.5 : 1 }}>
               {adding ? '...' : 'إضافة'}
             </button>
           </div>
-          {msg && <p className={`text-xs ${msg.includes('خطأ') ? 'text-red-500' : 'text-[#0F6E56]'}`}>{msg}</p>}
+          {msg && <p style={{ fontSize: 12, color: msg.includes('خطأ') ? 'var(--danger)' : 'var(--primary)', margin: 0 }}>{msg}</p>}
         </div>
 
-        {/* List */}
         {loading ? (
-          <div className="text-center py-10 text-[#6B7280]">جاري التحميل...</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>جاري التحميل...</div>
         ) : (
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {admins.map((a) => (
-              <div key={a.id} className="bg-white rounded-xl border border-[#E8ECEF] p-4 flex items-center justify-between">
+              <div key={a.id} style={{ background: 'var(--card)', borderRadius: 16, border: '1px solid var(--border)', padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <p className="text-sm font-medium text-[#1A1A1A]">{a.profiles?.full_name ?? '—'}</p>
-                  <p className="text-xs text-[#6B7280]">{a.profiles?.phone}</p>
-                  {a.is_super_admin && <span className="text-xs text-[#0F6E56]">مشرف رئيسي</span>}
+                  <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: '0 0 2px' }}>{a.profiles?.full_name ?? '—'}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 2px' }}>{a.profiles?.phone}</p>
+                  {a.is_super_admin && <span style={{ fontSize: 11, color: 'var(--primary)' }}>مشرف رئيسي</span>}
                 </div>
                 {!a.is_super_admin && (
                   <button onClick={() => removeAdmin(a.user_id)}
-                    className="text-xs text-red-500 border border-red-300 px-3 py-1 rounded-lg">
+                    style={{ fontSize: 12, color: 'var(--danger)', border: '1px solid var(--danger)', padding: '5px 12px', borderRadius: 10, background: 'transparent', cursor: 'pointer' }}>
                     إزالة
                   </button>
                 )}

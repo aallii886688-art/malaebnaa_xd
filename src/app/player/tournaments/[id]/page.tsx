@@ -63,36 +63,41 @@ export default function TournamentDetailPage() {
   const teamName2 = (tid: string | null) => teams.find((t) => t.id === tid)?.team_name ?? '—'
   const approvedTeams = teams.filter((t) => t.status === 'approved')
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>
-  if (!tournament) return <div className="min-h-screen flex items-center justify-center text-red-500">البطولة غير موجودة</div>
+  if (loading) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>جاري التحميل...</div>
+  if (!tournament) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)' }}>البطولة غير موجودة</div>
 
   const canRegister = tournament.status === 'registration' && !myTeam && approvedTeams.length < tournament.max_teams
 
+  const tabs = [
+    { key: 'info', label: '📋 تفاصيل' },
+    { key: 'teams', label: `👥 الفرق (${approvedTeams.length})` },
+    { key: 'bracket', label: '⚽ المباريات' },
+  ]
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-xl">←</button>
-        <div className="flex-1">
-          <p className="text-xs opacity-80">{sportLabel[tournament.sport_type]}</p>
-          <h1 className="text-base font-bold">{tournament.name}</h1>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>{sportLabel[tournament.sport_type]}</p>
+          <h1 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{tournament.name}</h1>
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className="flex bg-white border-b border-[#E8ECEF]">
-        {(['info','teams','bracket'] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`flex-1 py-3 text-xs font-medium ${tab === t ? 'text-[#0F6E56] border-b-2 border-[#0F6E56]' : 'text-[#6B7280]'}`}>
-            {t === 'info' ? '📋 تفاصيل' : t === 'teams' ? `👥 الفرق (${approvedTeams.length})` : '⚽ المباريات'}
+      <div style={{ display: 'flex', background: 'var(--card)', borderBottom: '1px solid var(--border)' }}>
+        {tabs.map((t) => (
+          <button key={t.key} onClick={() => setTab(t.key as typeof tab)}
+            style={{ flex: 1, padding: '12px 4px', fontSize: 12, fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer', color: tab === t.key ? 'var(--primary)' : 'var(--text2)', borderBottom: tab === t.key ? '2px solid var(--primary)' : '2px solid transparent' }}>
+            {t.label}
           </button>
         ))}
       </div>
 
-      <div className="px-4 py-4 pb-10 space-y-3">
+      <div style={{ padding: '16px 16px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {tab === 'info' && (
           <>
-            <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 {[
                   { label: 'المدينة', value: tournament.city },
                   { label: 'الملعب', value: tournament.venue },
@@ -101,22 +106,21 @@ export default function TournamentDetailPage() {
                   { label: 'رسوم التسجيل', value: +tournament.registration_fee_sar === 0 ? '🆓 مجاني' : `${tournament.registration_fee_sar} ريال` },
                   { label: 'آخر تسجيل', value: tournament.registration_deadline ? new Date(tournament.registration_deadline).toLocaleDateString('ar-SA') : null },
                 ].map(({ label, value }) => value ? (
-                  <div key={label}><p className="text-xs text-[#9CA3AF]">{label}</p><p className="text-sm text-[#1A1A1A] mt-0.5">{value}</p></div>
+                  <div key={label}><p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 2px' }}>{label}</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0 }}>{value}</p></div>
                 ) : null)}
               </div>
             </div>
 
-            {/* My team status */}
             {myTeam && (
-              <div className={`rounded-2xl border p-4 ${myTeam.status === 'approved' ? 'bg-[#E8F5F1] border-[#0F6E56]' : myTeam.status === 'rejected' ? 'bg-red-50 border-red-300' : 'bg-[#FFF8E8] border-[#C17B1A]'}`}>
-                <p className="text-sm font-bold">{myTeam.status === 'approved' ? '✅ فريقك مقبول' : myTeam.status === 'rejected' ? '❌ تم رفض فريقك' : '⏳ طلب قيد المراجعة'}</p>
-                <p className="text-xs mt-0.5 text-[#6B7280]">{myTeam.team_name}</p>
+              <div style={{ borderRadius: 20, border: `1px solid ${myTeam.status === 'approved' ? 'var(--primary)' : myTeam.status === 'rejected' ? 'var(--danger)' : 'var(--gold)'}`, padding: 16, background: myTeam.status === 'approved' ? 'var(--primary-dim)' : myTeam.status === 'rejected' ? 'var(--danger-dim)' : 'var(--gold-dim)' }}>
+                <p style={{ fontSize: 13, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>{myTeam.status === 'approved' ? '✅ فريقك مقبول' : myTeam.status === 'rejected' ? '❌ تم رفض فريقك' : '⏳ طلب قيد المراجعة'}</p>
+                <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }}>{myTeam.team_name}</p>
               </div>
             )}
 
             {canRegister && (
               <button onClick={() => setShowRegForm(true)}
-                className="w-full bg-[#0F6E56] text-white py-3.5 rounded-2xl font-bold text-sm">
+                style={{ width: '100%', background: 'var(--primary)', color: 'var(--primary-fg)', padding: '14px', borderRadius: 20, fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer' }}>
                 🏆 سجّل فريقك الآن {+tournament.registration_fee_sar > 0 ? `— ${tournament.registration_fee_sar} ريال` : '— مجاني'}
               </button>
             )}
@@ -125,15 +129,15 @@ export default function TournamentDetailPage() {
 
         {tab === 'teams' && (
           approvedTeams.length === 0 ? (
-            <div className="text-center py-10"><p className="text-4xl mb-2">👥</p><p className="text-sm text-[#6B7280]">لا توجد فرق مقبولة بعد</p></div>
+            <div style={{ textAlign: 'center', padding: '40px 0' }}><p style={{ fontSize: 40, marginBottom: 8 }}>👥</p><p style={{ fontSize: 13, color: 'var(--text2)' }}>لا توجد فرق مقبولة بعد</p></div>
           ) : approvedTeams.map((t, i) => (
-            <div key={t.id} className="bg-white rounded-2xl border border-[#E8ECEF] p-4 flex items-center gap-3">
-              <span className="text-lg font-bold text-[#0F6E56] w-6">{i + 1}</span>
-              <div className="flex-1">
-                <p className="font-bold text-[#1A1A1A] text-sm">{t.team_name}</p>
-                <p className="text-xs text-[#6B7280]">{t.players?.length ?? 0} لاعب</p>
+            <div key={t.id} style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--primary)', width: 24 }}>{i + 1}</span>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontWeight: 700, color: 'var(--text)', fontSize: 13, margin: '0 0 2px' }}>{t.team_name}</p>
+                <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }}>{t.players?.length ?? 0} لاعب</p>
               </div>
-              {myTeam?.id === t.id && <span className="text-xs bg-[#0F6E56] text-white px-2 py-0.5 rounded-full">فريقك</span>}
+              {myTeam?.id === t.id && <span style={{ fontSize: 11, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '2px 8px', borderRadius: 20 }}>فريقك</span>}
             </div>
           ))
         )}
@@ -141,67 +145,66 @@ export default function TournamentDetailPage() {
         {tab === 'bracket' && (
           tournament.show_results && matches.length > 0 ? (
             [...new Set(matches.map((m) => m.round))].map((round) => (
-              <div key={round} className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
-                <p className="text-xs font-bold text-[#9CA3AF] mb-3">الجولة {round}</p>
-                <div className="space-y-3">
+              <div key={round} style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', marginBottom: 12 }}>الجولة {round}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {matches.filter((m) => m.round === round).map((m) => (
-                    <div key={m.id} className="flex items-center justify-between border border-[#F8F9FA] rounded-xl px-3 py-2.5">
-                      <p className={`text-sm font-medium flex-1 ${m.winner_id === m.team1_id ? 'text-[#0F6E56] font-bold' : 'text-[#1A1A1A]'}`}>{teamName2(m.team1_id)}</p>
-                      <div className="mx-3 text-center">
+                    <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--border)', borderRadius: 14, padding: '10px 12px' }}>
+                      <p style={{ fontSize: 13, fontWeight: m.winner_id === m.team1_id ? 700 : 500, flex: 1, margin: 0, color: m.winner_id === m.team1_id ? 'var(--primary)' : 'var(--text)' }}>{teamName2(m.team1_id)}</p>
+                      <div style={{ margin: '0 12px', textAlign: 'center' }}>
                         {m.is_played ? (
-                          <span className="text-base font-bold text-[#1A1A1A]">{m.team1_score} – {m.team2_score}</span>
+                          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{m.team1_score} – {m.team2_score}</span>
                         ) : (
-                          <span className="text-xs text-[#9CA3AF]">vs</span>
+                          <span style={{ fontSize: 12, color: 'var(--text3)' }}>vs</span>
                         )}
                       </div>
-                      <p className={`text-sm font-medium flex-1 text-left ${m.winner_id === m.team2_id ? 'text-[#0F6E56] font-bold' : 'text-[#1A1A1A]'}`}>{teamName2(m.team2_id)}</p>
+                      <p style={{ fontSize: 13, fontWeight: m.winner_id === m.team2_id ? 700 : 500, flex: 1, margin: 0, textAlign: 'left', color: m.winner_id === m.team2_id ? 'var(--primary)' : 'var(--text)' }}>{teamName2(m.team2_id)}</p>
                     </div>
                   ))}
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center py-10"><p className="text-4xl mb-2">⚽</p><p className="text-sm text-[#6B7280]">لا توجد مباريات بعد</p></div>
+            <div style={{ textAlign: 'center', padding: '40px 0' }}><p style={{ fontSize: 40, marginBottom: 8 }}>⚽</p><p style={{ fontSize: 13, color: 'var(--text2)' }}>لا توجد مباريات بعد</p></div>
           )
         )}
       </div>
 
-      {/* Registration form */}
       {showRegForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={() => setShowRegForm(false)}>
-          <div className="bg-white rounded-t-2xl p-5 w-full max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-bold text-[#1A1A1A] mb-4">تسجيل فريق</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', zIndex: 50 }} onClick={() => setShowRegForm(false)}>
+          <div style={{ background: 'var(--card)', borderRadius: '20px 20px 0 0', padding: 20, width: '100%', maxHeight: '85svh', overflowY: 'auto', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>تسجيل فريق</h3>
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1">اسم الفريق *</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>اسم الفريق *</label>
             <input value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="مثال: النسور"
-              className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56] mb-4" />
+              style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'transparent', color: 'var(--text)', boxSizing: 'border-box', marginBottom: 16 }} />
 
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-medium text-[#1A1A1A]">أسماء اللاعبين</label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>أسماء اللاعبين</label>
               <button onClick={() => setPlayers((p) => [...p, ''])}
-                className="text-xs text-[#0F6E56] font-medium">+ إضافة لاعب</button>
+                style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer' }}>+ إضافة لاعب</button>
             </div>
-            <div className="space-y-2 mb-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
               {players.map((p, i) => (
-                <div key={i} className="flex gap-2">
+                <div key={i} style={{ display: 'flex', gap: 8 }}>
                   <input value={p} onChange={(e) => setPlayers((arr) => arr.map((x, j) => j === i ? e.target.value : x))}
                     placeholder={`اللاعب ${i + 1}`}
-                    className="flex-1 border border-[#E8ECEF] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#0F6E56]" />
+                    style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px', fontSize: 13, outline: 'none', background: 'transparent', color: 'var(--text)' }} />
                   {players.length > 1 && (
                     <button onClick={() => setPlayers((arr) => arr.filter((_, j) => j !== i))}
-                      className="text-red-400 text-sm px-2">🗑</button>
+                      style={{ color: 'var(--danger)', fontSize: 14, padding: '0 8px', background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑</button>
                   )}
                 </div>
               ))}
             </div>
 
-            {regError && <p className="text-red-500 text-xs mb-3">{regError}</p>}
-            <div className="flex gap-2">
+            {regError && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12 }}>{regError}</p>}
+            <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={register} disabled={registering}
-                className="flex-1 bg-[#0F6E56] text-white py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50">
+                style={{ flex: 1, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '10px', borderRadius: 14, fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer', opacity: registering ? 0.5 : 1 }}>
                 {registering ? 'جاري التسجيل...' : +tournament.registration_fee_sar > 0 ? `تسجيل وادفع ${tournament.registration_fee_sar} ر` : 'تسجيل الفريق'}
               </button>
-              <button onClick={() => setShowRegForm(false)} className="flex-1 border border-[#E8ECEF] py-2.5 rounded-xl text-sm">إلغاء</button>
+              <button onClick={() => setShowRegForm(false)} style={{ flex: 1, border: '1px solid var(--border)', padding: '10px', borderRadius: 14, fontSize: 13, background: 'transparent', color: 'var(--text2)', cursor: 'pointer' }}>إلغاء</button>
             </div>
           </div>
         </div>

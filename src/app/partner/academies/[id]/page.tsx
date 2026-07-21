@@ -59,74 +59,79 @@ export default function AcademyManagePage() {
     setShowForm(false); setForm(defaultProg); await load(); setSaving(false)
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>
-  if (!academy) return <div className="min-h-screen flex items-center justify-center text-red-500">الأكاديمية غير موجودة</div>
+  if (loading) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>جاري التحميل...</div>
+  if (!academy) return <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)' }}>الأكاديمية غير موجودة</div>
+
+  const inputStyle = { width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 12px', fontSize: 13, outline: 'none', background: 'transparent', color: 'var(--text)', boxSizing: 'border-box' as const }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-xl">←</button>
-          <div><p className="text-xs opacity-80">إدارة الأكاديمية</p><h1 className="text-base font-bold">{academy.name}</h1></div>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>←</button>
+          <div>
+            <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>إدارة الأكاديمية</p>
+            <h1 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{academy.name}</h1>
+          </div>
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full ${academy.is_active ? 'bg-white/20' : 'bg-red-400/30 text-red-100'}`}>
+        <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, background: academy.is_active ? 'var(--primary-dim)' : 'var(--danger-dim)', color: academy.is_active ? 'var(--primary)' : 'var(--danger)' }}>
           {academy.is_active ? '🟢 نشط' : '🔴 موقوف'}
         </span>
       </header>
 
-      <div className="flex bg-white border-b border-[#E8ECEF]">
+      <div style={{ display: 'flex', background: 'var(--card)', borderBottom: '1px solid var(--border)' }}>
         {(['info', 'programs'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`flex-1 py-3 text-sm font-medium ${tab === t ? 'text-[#0F6E56] border-b-2 border-[#0F6E56]' : 'text-[#6B7280]'}`}>
+            style={{ flex: 1, padding: '12px', fontSize: 13, fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer', color: tab === t ? 'var(--primary)' : 'var(--text2)', borderBottom: tab === t ? '2px solid var(--primary)' : '2px solid transparent' }}>
             {t === 'info' ? '📋 المعلومات' : `🏃 البرامج (${programs.length})`}
           </button>
         ))}
       </div>
 
-      <div className="px-4 py-4 pb-10 space-y-3">
+      <div style={{ padding: '16px 16px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {tab === 'info' ? (
           <>
-            <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-3">
-              <div><p className="text-xs text-[#9CA3AF]">المدينة</p><p className="text-sm text-[#1A1A1A] mt-0.5">📍 {academy.city}</p></div>
-              <div><p className="text-xs text-[#9CA3AF]">الرياضات</p><p className="text-sm text-[#1A1A1A] mt-0.5">{academy.sport_types.map((s) => sportLabel[s]).join(' · ')}</p></div>
-              {academy.phone && <div><p className="text-xs text-[#9CA3AF]">الجوال</p><p className="text-sm text-[#0F6E56] mt-0.5" dir="ltr">+966{academy.phone}</p></div>}
-              {academy.description && <div><p className="text-xs text-[#9CA3AF]">الوصف</p><p className="text-sm text-[#1A1A1A] mt-0.5">{academy.description}</p></div>}
+            <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div><p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 2px' }}>المدينة</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0 }}>📍 {academy.city}</p></div>
+              <div><p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 2px' }}>الرياضات</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0 }}>{academy.sport_types.map((s) => sportLabel[s]).join(' · ')}</p></div>
+              {academy.phone && <div><p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 2px' }}>الجوال</p><p style={{ fontSize: 13, color: 'var(--primary)', margin: 0 }} dir="ltr">+966{academy.phone}</p></div>}
+              {academy.description && <div><p style={{ fontSize: 11, color: 'var(--text3)', margin: '0 0 2px' }}>الوصف</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0 }}>{academy.description}</p></div>}
             </div>
             <button onClick={toggleActive}
-              className={`w-full py-3 rounded-2xl font-semibold text-sm border ${academy.is_active ? 'border-red-300 text-red-500' : 'border-[#0F6E56] text-[#0F6E56]'}`}>
+              style={{ width: '100%', padding: '12px', borderRadius: 20, fontWeight: 700, fontSize: 13, background: 'transparent', cursor: 'pointer', border: `1px solid ${academy.is_active ? 'var(--danger)' : 'var(--primary)'}`, color: academy.is_active ? 'var(--danger)' : 'var(--primary)' }}>
               {academy.is_active ? '⏸ إيقاف الأكاديمية' : '▶ تفعيل الأكاديمية'}
             </button>
           </>
         ) : (
           <>
-            <div className="flex justify-end">
-              <button onClick={() => setShowForm(true)} className="text-xs bg-[#0F6E56] text-white px-3 py-1.5 rounded-xl">+ برنامج جديد</button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setShowForm(true)} style={{ fontSize: 12, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '6px 14px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 600 }}>+ برنامج جديد</button>
             </div>
             {programs.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-4xl mb-2">🏃</p>
-                <p className="text-sm text-[#6B7280]">لا توجد برامج بعد</p>
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <p style={{ fontSize: 40, marginBottom: 8 }}>🏃</p>
+                <p style={{ fontSize: 13, color: 'var(--text2)' }}>لا توجد برامج بعد</p>
               </div>
             ) : programs.map((p) => (
-              <div key={p.id} className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
-                <div className="flex items-start justify-between mb-1">
+              <div key={p.id} style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
                   <div>
-                    <p className="font-bold text-[#1A1A1A] text-sm">{p.name}</p>
-                    <p className="text-xs text-[#6B7280]">{sportLabel[p.sport_type]}</p>
-                    {p.coach_name && <p className="text-xs text-[#9CA3AF]">المدرب: {p.coach_name}</p>}
-                    {(p.age_min || p.age_max) && <p className="text-xs text-[#9CA3AF]">العمر: {p.age_min ?? '?'} – {p.age_max ?? '?'} سنة</p>}
+                    <p style={{ fontWeight: 700, color: 'var(--text)', fontSize: 13, margin: '0 0 2px' }}>{p.name}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 2px' }}>{sportLabel[p.sport_type]}</p>
+                    {p.coach_name && <p style={{ fontSize: 12, color: 'var(--text3)', margin: '0 0 2px' }}>المدرب: {p.coach_name}</p>}
+                    {(p.age_min || p.age_max) && <p style={{ fontSize: 12, color: 'var(--text3)', margin: 0 }}>العمر: {p.age_min ?? '?'} – {p.age_max ?? '?'} سنة</p>}
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${p.is_active ? 'bg-[#E8F5F1] text-[#0F6E56]' : 'bg-gray-100 text-gray-400'}`}>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: p.is_active ? 'var(--primary-dim)' : 'var(--bg)', color: p.is_active ? 'var(--primary)' : 'var(--text3)' }}>
                     {p.is_active ? 'نشط' : 'موقوف'}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 mt-2 text-xs">
-                  <span className="text-[#6B7280]">👥 {p.current_students}/{p.max_students}</span>
-                  {p.monthly_price_sar && <span className="text-[#0F6E56] font-bold">{p.monthly_price_sar} ر/شهر</span>}
-                  {p.program_price_sar && <span className="text-[#0F6E56] font-bold">{p.program_price_sar} ر/برنامج</span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, fontSize: 12 }}>
+                  <span style={{ color: 'var(--text2)' }}>👥 {p.current_students}/{p.max_students}</span>
+                  {p.monthly_price_sar && <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{p.monthly_price_sar} ر/شهر</span>}
+                  {p.program_price_sar && <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{p.program_price_sar} ر/برنامج</span>}
                 </div>
-                <div className="w-full bg-[#F8F9FA] rounded-full h-1.5 mt-2">
-                  <div className="bg-[#0F6E56] h-1.5 rounded-full" style={{ width: `${Math.min((p.current_students / p.max_students) * 100, 100)}%` }} />
+                <div style={{ width: '100%', background: 'var(--bg)', borderRadius: 20, height: 6, marginTop: 8 }}>
+                  <div style={{ background: 'var(--primary)', height: 6, borderRadius: 20, width: `${Math.min((p.current_students / p.max_students) * 100, 100)}%` }} />
                 </div>
               </div>
             ))}
@@ -135,68 +140,68 @@ export default function AcademyManagePage() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-t-2xl p-5 w-full max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-bold text-[#1A1A1A] mb-4">إضافة برنامج تدريبي</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', zIndex: 50 }} onClick={() => setShowForm(false)}>
+          <div style={{ background: 'var(--card)', borderRadius: '20px 20px 0 0', padding: 20, width: '100%', maxHeight: '85svh', overflowY: 'auto', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>إضافة برنامج تدريبي</h3>
 
             {[
               { label: 'اسم البرنامج *', key: 'name', placeholder: 'مثال: برنامج كرة القدم للناشئين' },
               { label: 'اسم المدرب', key: 'coach_name', placeholder: 'اسم المدرب' },
             ].map(({ label, key, placeholder }) => (
-              <div key={key} className="mb-3">
-                <label className="block text-xs font-medium text-[#1A1A1A] mb-1">{label}</label>
+              <div key={key} style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>{label}</label>
                 <input value={(form as Record<string, string>)[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                  placeholder={placeholder} className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]" />
+                  placeholder={placeholder} style={inputStyle} />
               </div>
             ))}
 
-            <div className="grid grid-cols-3 gap-2 mb-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
               {[
                 { label: 'العمر من', key: 'age_min', placeholder: '8' },
                 { label: 'العمر إلى', key: 'age_max', placeholder: '16' },
                 { label: 'الحد الأقصى *', key: 'max_students', placeholder: '20' },
               ].map(({ label, key, placeholder }) => (
                 <div key={key}>
-                  <label className="block text-xs font-medium text-[#1A1A1A] mb-1">{label}</label>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>{label}</label>
                   <input type="number" value={(form as Record<string, string>)[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                    placeholder={placeholder} className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]" />
+                    placeholder={placeholder} style={{ ...inputStyle, padding: '8px 10px' }} />
                 </div>
               ))}
             </div>
 
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-2">نوع السعر</label>
-            <div className="flex gap-2 mb-3">
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>نوع السعر</label>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               {[{ v: 'monthly', l: 'شهري' }, { v: 'program', l: 'برنامج' }, { v: 'both', l: 'كلاهما' }].map(({ v, l }) => (
                 <button key={v} onClick={() => setForm((f) => ({ ...f, pricing_type: v }))}
-                  className={`flex-1 text-xs py-2 rounded-xl border ${form.pricing_type === v ? 'border-[#0F6E56] bg-[#E8F5F1] text-[#0F6E56]' : 'border-[#E8ECEF] text-[#6B7280]'}`}>{l}</button>
+                  style={{ flex: 1, fontSize: 12, padding: '8px', borderRadius: 12, border: `1px solid ${form.pricing_type === v ? 'var(--primary)' : 'var(--border)'}`, background: form.pricing_type === v ? 'var(--primary-dim)' : 'transparent', color: form.pricing_type === v ? 'var(--primary)' : 'var(--text2)', cursor: 'pointer' }}>{l}</button>
               ))}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
               {(form.pricing_type === 'monthly' || form.pricing_type === 'both') && (
                 <div>
-                  <label className="block text-xs font-medium text-[#1A1A1A] mb-1">السعر الشهري (ريال)</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>السعر الشهري (ريال)</label>
                   <input type="number" value={form.monthly_price_sar} onChange={(e) => setForm((f) => ({ ...f, monthly_price_sar: e.target.value }))}
-                    placeholder="500" className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]" />
+                    placeholder="500" style={inputStyle} />
                 </div>
               )}
               {(form.pricing_type === 'program' || form.pricing_type === 'both') && (
                 <div>
-                  <label className="block text-xs font-medium text-[#1A1A1A] mb-1">سعر البرنامج (ريال)</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>سعر البرنامج (ريال)</label>
                   <input type="number" value={form.program_price_sar} onChange={(e) => setForm((f) => ({ ...f, program_price_sar: e.target.value }))}
-                    placeholder="1500" className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]" />
+                    placeholder="1500" style={inputStyle} />
                 </div>
               )}
             </div>
 
-            {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
-            <div className="flex gap-2">
+            {error && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12 }}>{error}</p>}
+            <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={saveProgram} disabled={saving}
-                className="flex-1 bg-[#0F6E56] text-white py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50">
+                style={{ flex: 1, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '10px', borderRadius: 14, fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
                 {saving ? 'جاري الحفظ...' : 'حفظ البرنامج'}
               </button>
               <button onClick={() => { setShowForm(false); setError('') }}
-                className="flex-1 border border-[#E8ECEF] py-2.5 rounded-xl text-sm">إلغاء</button>
+                style={{ flex: 1, border: '1px solid var(--border)', padding: '10px', borderRadius: 14, fontSize: 13, background: 'transparent', color: 'var(--text2)', cursor: 'pointer' }}>إلغاء</button>
             </div>
           </div>
         </div>

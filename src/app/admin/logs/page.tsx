@@ -20,47 +20,42 @@ export default function AdminLogsPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase
-      .from('notifications')
-      .select('*, profiles:user_id(full_name, phone)')
-      .order('created_at', { ascending: false })
-      .limit(100)
+    supabase.from('notifications').select('*, profiles:user_id(full_name, phone)')
+      .order('created_at', { ascending: false }).limit(100)
       .then(({ data }) => { setLogs((data as Notification[]) ?? []); setLoading(false) })
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white text-xl">←</button>
+    <div style={{ minHeight: '100svh', background: 'var(--bg)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#1a1a2e,#16213e)', padding: '52px 16px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => router.back()} style={{ fontSize: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff' }}>←</button>
         <div>
-          <p className="text-xs opacity-80">لوحة التحكم</p>
-          <h1 className="text-lg font-bold">سجل النشاطات</h1>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', margin: 0 }}>لوحة التحكم</p>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>سجل النشاطات</h1>
         </div>
       </header>
 
-      <div className="px-4 py-4 space-y-2">
+      <div style={{ padding: '12px 16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {loading ? (
-          <div className="text-center py-10 text-[#6B7280]">جاري التحميل...</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>جاري التحميل...</div>
         ) : logs.length === 0 ? (
-          <div className="text-center py-10 text-[#6B7280]">لا توجد نشاطات بعد</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)' }}>لا توجد نشاطات بعد</div>
         ) : (
           logs.map((log) => (
-            <div key={log.id} className="bg-white rounded-xl border border-[#E8ECEF] p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-[#1A1A1A]">{log.title_ar}</p>
-                  <p className="text-xs text-[#6B7280] mt-0.5">{log.body_ar}</p>
+            <div key={log.id} style={{ background: 'var(--card)', borderRadius: 14, border: '1px solid var(--border)', padding: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: '0 0 2px' }}>{log.title_ar}</p>
+                  <p style={{ fontSize: 11, color: 'var(--text2)', margin: '0 0 2px' }}>{log.body_ar}</p>
                   {log.profiles && (
-                    <p className="text-xs text-[#9CA3AF] mt-0.5">{log.profiles.full_name} · {log.profiles.phone}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>{log.profiles.full_name} · {log.profiles.phone}</p>
                   )}
                 </div>
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${log.sent_via_whatsapp ? 'bg-[#E8F5F1] text-[#0F6E56]' : 'bg-red-50 text-red-400'}`}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0, marginRight: 8 }}>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: log.sent_via_whatsapp ? 'var(--primary-dim)' : 'var(--danger-dim)', color: log.sent_via_whatsapp ? 'var(--primary)' : 'var(--danger)' }}>
                     {log.sent_via_whatsapp ? 'واتساب ✓' : 'لم يُرسل'}
                   </span>
-                  <span className="text-[10px] text-[#9CA3AF]">
-                    {new Date(log.created_at).toLocaleDateString('ar-SA')}
-                  </span>
+                  <span style={{ fontSize: 10, color: 'var(--text3)' }}>{new Date(log.created_at).toLocaleDateString('ar-SA')}</span>
                 </div>
               </div>
             </div>
