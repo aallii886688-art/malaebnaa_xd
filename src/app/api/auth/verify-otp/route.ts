@@ -43,14 +43,17 @@ export async function POST(req: NextRequest) {
 
   // Rate limit على verify لمنع brute force
   const windowStart = new Date(Date.now() - VERIFY_WINDOW_MINUTES * 60 * 1000).toISOString()
-  const { count: attemptCount } = await supabaseAdmin
-    .from('otp_verify_attempts')
-    .select('*', { count: 'exact', head: true })
-    .eq('phone', phone)
-    .gte('created_at', windowStart)
-    .catch(() => ({ count: 0 }))
+  let attemptCount = 0
+  try {
+    const rateLimitRes = await supabaseAdmin
+      .from('otp_verify_attempts')
+      .select('*', { count: 'exact', head: true })
+      .eq('phone', phone)
+      .gte('created_at', windowStart)
+    attemptCount = rateLimitRes.count ?? 0
+  } catch { /* تجاهل — لا نمنع المستخدم إذا فشل الاستعلام */ }
 
-  if ((attemptCount ?? 0) >= VERIFY_RATE_LIMIT) {
+  if (attemptCount >= VERIFY_RATE_LIMIT) {
     return NextResponse.json(
       { error: `محاولات كثيرة. انتظر ${VERIFY_WINDOW_MINUTES} دقائق.` },
       { status: 429 },
@@ -58,7 +61,7 @@ export async function POST(req: NextRequest) {
   }
 
   // تسجيل محاولة التحقق
-  await supabaseAdmin.from('otp_verify_attempts').insert({ phone }).catch(() => null)
+  try { await supabaseAdmin.from('otp_verify_attempts').insert({ phone }) } catch { /* تجاهل */ }
 
   const otpHash = crypto.createHash('sha256').update(otp).digest('hex')
 
@@ -79,7 +82,7 @@ export async function POST(req: NextRequest) {
   await supabaseAdmin.from('phone_otps').update({ used: true }).eq('id', record.id)
 
   // حذف محاولات التحقق الناجحة
-  await supabaseAdmin.from('otp_verify_attempts').delete().eq('phone', phone).catch(() => null)
+  try { await supabaseAdmin.from('otp_verify_attempts').delete().eq('phone', phone) } catch { /* تجاهل */ }
 
   const email = phoneToEmail(phone)
   const tempPassword = crypto.randomBytes(16).toString('hex')
