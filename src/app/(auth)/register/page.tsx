@@ -62,25 +62,25 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#F8F9FA]">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="text-4xl mb-2">⚽</div>
-          <h1 className="text-2xl font-bold text-[#0F6E56]">ملاعبنا</h1>
+    <div style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'var(--bg)' }}>
+      <div style={{ width: '100%', maxWidth: 380 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ fontSize: 48, marginBottom: 8 }}>⚽</div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)', margin: 0 }}>ملاعبنا</h1>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#E8ECEF] p-6">
+        <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 24 }}>
           {step === 'form' ? (
             <>
-              <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">إنشاء حساب جديد</h2>
-              <p className="text-sm text-[#6B7280] mb-5">سيصلك رمز التحقق على واتساب</p>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>إنشاء حساب جديد</h2>
+              <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 20 }}>سيصلك رمز التحقق على واتساب</p>
 
-              <div className="grid grid-cols-2 gap-3 mb-5">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
                 {(['player', 'partner'] as AccountType[]).map((type) => (
                   <button key={type} onClick={() => setForm((f) => ({ ...f, account_type: type }))}
-                    className={`border-2 rounded-xl p-3 text-center transition-all ${form.account_type === type ? 'border-[#0F6E56] bg-[#E8F5F1]' : 'border-[#E8ECEF]'}`}>
-                    <div className="text-2xl mb-1">{type === 'player' ? '🏃' : '🏟️'}</div>
-                    <div className={`text-sm font-semibold ${form.account_type === type ? 'text-[#0F6E56]' : 'text-[#1A1A1A]'}`}>
+                    style={{ border: `2px solid ${form.account_type === type ? 'var(--primary)' : 'var(--border)'}`, borderRadius: 14, padding: 12, textAlign: 'center', background: form.account_type === type ? 'var(--primary-dim)' : 'transparent', cursor: 'pointer' }}>
+                    <div style={{ fontSize: 24, marginBottom: 4 }}>{type === 'player' ? '🏃' : '🏟️'}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: form.account_type === type ? 'var(--primary)' : 'var(--text)' }}>
                       {type === 'player' ? 'لاعب' : 'شريك'}
                     </div>
                   </button>
@@ -88,62 +88,62 @@ export default function RegisterPage() {
               </div>
 
               {form.account_type === 'partner' && (
-                <p className="text-xs text-[#6B7280] bg-[#F8F9FA] rounded-lg p-2 mb-4">
+                <p style={{ fontSize: 11, color: 'var(--text2)', background: 'var(--bg)', borderRadius: 10, padding: '8px 12px', marginBottom: 16 }}>
                   تفعيل أنشطة الشركاء يتم من داخل الحساب ويحتاج موافقة الإدارة
                 </p>
               )}
 
-              <label className="block text-sm font-medium text-[#1A1A1A] mb-1">الاسم الكامل</label>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>الاسم الكامل</label>
               <input value={form.full_name}
                 onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
                 placeholder="الاسم الرباعي"
-                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0F6E56] mb-4" />
+                style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 12, padding: '11px 12px', fontSize: 14, outline: 'none', background: 'var(--card)', color: 'var(--text)', boxSizing: 'border-box', marginBottom: 16 }} />
 
-              <label className="block text-sm font-medium text-[#1A1A1A] mb-1">رقم الجوال</label>
-              <div className="flex items-center border border-[#E8ECEF] rounded-xl overflow-hidden mb-5 focus-within:border-[#0F6E56]" dir="ltr">
-                <span className="px-3 py-3 text-sm text-[#6B7280] bg-[#F8F9FA] border-r border-[#E8ECEF] whitespace-nowrap">🇸🇦 +966</span>
-                <input type="tel" value={form.phone}
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>رقم الجوال</label>
+              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', marginBottom: 20 }} dir="ltr">
+                <span style={{ padding: '12px', fontSize: 13, color: 'var(--text2)', background: 'var(--bg)', borderRight: '1px solid var(--border)', whiteSpace: 'nowrap' }}>🇸🇦 +966</span>
+                <input type="tel" inputMode="numeric" value={form.phone}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 9) }))}
                   placeholder="5XXXXXXXX"
-                  className="flex-1 px-3 py-3 text-sm focus:outline-none bg-white"
+                  style={{ flex: 1, padding: '12px', fontSize: 15, outline: 'none', background: 'var(--card)', color: 'var(--text)', border: 'none', minWidth: 0 }}
                   dir="ltr" />
               </div>
 
-              {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+              {error && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12 }}>{error}</p>}
               <button onClick={sendOtp} disabled={loading}
-                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
+                style={{ width: '100%', background: 'var(--primary)', color: 'var(--primary-fg)', padding: '13px', borderRadius: 14, fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: loading ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 {loading ? 'جاري الإرسال...' : <><span>📱</span> إرسال رمز واتساب</>}
               </button>
             </>
           ) : (
             <>
-              <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">رمز التحقق</h2>
-              <div className="flex items-center gap-2 bg-[#E8F5F1] rounded-xl p-3 mb-5">
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>رمز التحقق</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--primary-dim)', borderRadius: 12, padding: 12, marginBottom: 20 }}>
                 <span>💬</span>
-                <p className="text-sm text-[#0F6E56]">تم إرسال الرمز على واتساب إلى <strong dir="ltr">{formattedPhone}</strong></p>
+                <p style={{ fontSize: 13, color: 'var(--primary)', margin: 0 }}>تم إرسال الرمز على واتساب إلى <strong dir="ltr">{formattedPhone}</strong></p>
               </div>
 
               <input type="text" value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="• • • • • •" maxLength={6}
-                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-4 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-[#0F6E56] mb-4"
+                style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 14, padding: '16px', textAlign: 'center', fontSize: 24, letterSpacing: '0.5em', outline: 'none', background: 'transparent', color: 'var(--text)', boxSizing: 'border-box', marginBottom: 16 }}
                 dir="ltr" />
 
-              {error && <p className="text-red-500 text-xs mb-3 text-center">{error}</p>}
+              {error && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12, textAlign: 'center' }}>{error}</p>}
 
               <button onClick={verifyOtp} disabled={loading || otp.length < 6}
-                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 mb-3">
+                style={{ width: '100%', background: 'var(--primary)', color: 'var(--primary-fg)', padding: '13px', borderRadius: 14, fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: (loading || otp.length < 6) ? 0.5 : 1, marginBottom: 12 }}>
                 {loading ? 'جاري التحقق...' : 'إنشاء الحساب'}
               </button>
               <button onClick={() => { setStep('form'); setOtp(''); setError('') }}
-                className="w-full text-sm text-[#6B7280] py-2">← رجوع</button>
+                style={{ width: '100%', fontSize: 13, color: 'var(--text2)', padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer' }}>← رجوع</button>
             </>
           )}
         </div>
 
-        <p className="text-center text-sm text-[#6B7280] mt-4">
+        <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text2)', marginTop: 16 }}>
           لديك حساب؟{' '}
-          <Link href="/login" className="text-[#0F6E56] font-medium">سجل دخول</Link>
+          <Link href="/login" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>سجل دخول</Link>
         </p>
       </div>
     </div>
