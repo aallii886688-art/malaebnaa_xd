@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { sanitizeText, enforceLimit } from '@/lib/sanitize'
 
 const sportOptions = [
   { value: 'football', label: '⚽ كرة قدم' }, { value: 'futsal', label: '🥅 فوتسال' },
@@ -37,13 +38,20 @@ export default function NewTournamentPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
     const { data, error: err } = await supabase.from('tournaments').insert({
-      owner_id: user.id, name: form.name, sport_type: form.sport_type,
-      system: form.system, city: form.city, venue: form.venue || null,
-      max_teams: +form.max_teams, players_per_team: +form.players_per_team,
-      substitutes_per_team: +form.substitutes_per_team,
-      registration_fee_sar: +form.registration_fee_sar,
-      age_group: form.age_group || null, description: form.description || null,
-      start_date: form.start_date || null, end_date: form.end_date || null,
+      owner_id: user.id,
+      name: enforceLimit(sanitizeText(form.name), 'name'),
+      sport_type: form.sport_type,
+      system: form.system,
+      city: form.city,
+      venue: form.venue ? enforceLimit(sanitizeText(form.venue), 'short_text') : null,
+      max_teams: Math.min(Math.max(2, +form.max_teams), 128),
+      players_per_team: Math.min(Math.max(1, +form.players_per_team), 30),
+      substitutes_per_team: Math.min(Math.max(0, +form.substitutes_per_team), 15),
+      registration_fee_sar: Math.max(0, +form.registration_fee_sar),
+      age_group: form.age_group ? enforceLimit(sanitizeText(form.age_group), 'short_text') : null,
+      description: form.description ? enforceLimit(sanitizeText(form.description), 'description') : null,
+      start_date: form.start_date || null,
+      end_date: form.end_date || null,
       registration_deadline: form.registration_deadline || null,
       status: 'upcoming',
     }).select('id').single()

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { sanitizeText, enforceLimit } from '@/lib/sanitize'
 
 const sportOptions = [
   { value: 'football', label: '⚽ كرة قدم' }, { value: 'futsal', label: '🥅 فوتسال' },
@@ -32,8 +33,12 @@ export default function NewAcademyPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
     const { data, error: err } = await supabase.from('academies').insert({
-      owner_id: user.id, name: form.name, city: form.city,
-      sport_types: form.sport_types, phone: form.phone || null, description: form.description || null,
+      owner_id: user.id,
+      name: enforceLimit(sanitizeText(form.name), 'name'),
+      city: form.city,
+      sport_types: form.sport_types,
+      phone: form.phone || null,
+      description: form.description ? enforceLimit(sanitizeText(form.description), 'description') : null,
     }).select('id').single()
     if (err) { setError(err.message); setSaving(false); return }
     router.push(`/partner/academies/${data.id}`)

@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { sanitizeText, enforceLimit } from '@/lib/sanitize'
 
 export const runtime = 'nodejs'
+
+// Rate limit: max 5 verify attempts per phone per 10 minutes (منع brute force)
+const VERIFY_RATE_LIMIT = 5
+const VERIFY_WINDOW_MINUTES = 10
 
 function phoneToEmail(phone: string) {
   return `${phone.replace('+', '')}@malaebnaa.internal`
@@ -14,10 +19,48 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
 
-  const { phone, otp, full_name, account_type } = await req.json()
-  if (!phone || !otp) return NextResponse.json({ error: 'بيانات ناقصة' }, { status: 400 })
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'طلب غير صالح' }, { status: 400 })
+  }
 
-  const otpHash = crypto.createHash('sha256').update(String(otp)).digest('hex')
+  const b = body as Record<string, unknown>
+  const phone = typeof b.phone === 'string' ? b.phone.trim() : ''
+  const otp = typeof b.otp === 'string' ? b.otp.replace(/\D/g, '').slice(0, 6) : ''
+  const rawName = typeof b.full_name === 'string' ? b.full_name : ''
+  const full_name = enforceLimit(sanitizeText(rawName), 'name')
+  const account_type = b.account_type === 'partner' ? 'partner' : 'player'
+
+  if (!phone || !otp) {
+    return NextResponse.json({ error: 'بيانات ناقصة' }, { status: 400 })
+  }
+
+  if (otp.length !== 6) {
+    return NextResponse.json({ error: 'رمز التحقق يجب أن يكون 6 أرقام' }, { status: 400 })
+  }
+
+  // Rate limit على verify لمنع brute force
+  const windowStart = new Date(Date.now() - VERIFY_WINDOW_MINUTES * 60 * 1000).toISOString()
+  const { count: attemptCount } = await supabaseAdmin
+    .from('otp_verify_attempts')
+    .select('*', { count: 'exact', head: true })
+    .eq('phone', phone)
+    .gte('created_at', windowStart)
+    .catch(() => ({ count: 0 }))
+
+  if ((attemptCount ?? 0) >= VERIFY_RATE_LIMIT) {
+    return NextResponse.json(
+      { error: `محاولات كثيرة. انتظر ${VERIFY_WINDOW_MINUTES} دقائق.` },
+      { status: 429 },
+    )
+  }
+
+  // تسجيل محاولة التحقق
+  await supabaseAdmin.from('otp_verify_attempts').insert({ phone }).catch(() => null)
+
+  const otpHash = crypto.createHash('sha256').update(otp).digest('hex')
 
   const { data: record } = await supabaseAdmin
     .from('phone_otps')
@@ -32,7 +75,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'رمز التحقق غير صحيح أو منتهي الصلاحية' }, { status: 400 })
   }
 
+  // تعليم الكود كـ مستخدم
   await supabaseAdmin.from('phone_otps').update({ used: true }).eq('id', record.id)
+
+  // حذف محاولات التحقق الناجحة
+  await supabaseAdmin.from('otp_verify_attempts').delete().eq('phone', phone).catch(() => null)
 
   const email = phoneToEmail(phone)
   const tempPassword = crypto.randomBytes(16).toString('hex')
@@ -53,7 +100,7 @@ export async function POST(req: NextRequest) {
       email,
       password: tempPassword,
       email_confirm: true,
-      user_metadata: { full_name, phone, account_type: account_type ?? 'player' },
+      user_metadata: { full_name, phone, account_type },
     })
 
     if (createError || !newUser.user) {
@@ -68,7 +115,6 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // إنشاء session
   const supabaseAnon = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

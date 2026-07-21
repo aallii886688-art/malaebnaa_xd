@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { sanitizeText, enforceLimit } from '@/lib/sanitize'
 
 const sportOptions = [
   { value: 'football', label: '⚽ كرة قدم' },
@@ -47,13 +48,13 @@ export default function NewFacilityPage() {
 
     const { data, error: err } = await supabase.from('facilities').insert({
       owner_id: user.id,
-      name: form.name,
+      name: enforceLimit(sanitizeText(form.name), 'name'),
       sport_type: form.sport_type,
       city: form.city,
-      district: form.district || null,
-      address: form.address || null,
+      district: form.district ? enforceLimit(sanitizeText(form.district), 'short_text') : null,
+      address: form.address ? enforceLimit(sanitizeText(form.address), 'address') : null,
       phone: form.phone || null,
-      description: form.description || null,
+      description: form.description ? enforceLimit(sanitizeText(form.description), 'description') : null,
     }).select('id').single()
 
     if (err) { setError(err.message); setSaving(false); return }
