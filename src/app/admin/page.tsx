@@ -26,6 +26,8 @@ export default async function AdminDashboard() {
     { href: '/admin/fields', icon: '📋', label: 'إدارة الحقول' },
     { href: '/admin/commissions', icon: '💰', label: 'العمولات' },
     { href: '/admin/payments', icon: '💳', label: 'المدفوعات' },
+    { href: '/admin/settlements', icon: '🏦', label: 'طلبات التسوية' },
+    { href: '/admin/refunds', icon: '↩️', label: 'الاسترداد' },
     { href: '/admin/logs', icon: '📊', label: 'سجل النشاطات' },
     { href: '/admin/employees', icon: '🏢', label: 'موظفو الإدارة' },
   ]
