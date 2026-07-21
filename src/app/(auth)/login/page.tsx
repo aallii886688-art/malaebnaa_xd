@@ -14,13 +14,20 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // المستخدم يكتب 5XXXXXXXX أو 05XXXXXXXX — نحوّلها لـ +9665XXXXXXXX
+  const buildPhone = (raw: string) => {
+    const digits = raw.replace(/\D/g, '')
+    if (digits.startsWith('0')) return '+966' + digits.slice(1)
+    return '+966' + digits
+  }
+
   const sendOtp = async () => {
     setLoading(true)
     setError('')
     const res = await fetch('/api/auth/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone }),
+      body: JSON.stringify({ phone: buildPhone(phone) }),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error ?? 'حدث خطأ'); setLoading(false); return }
@@ -40,12 +47,10 @@ export default function LoginPage() {
     const data = await res.json()
     if (!res.ok) { setError(data.error ?? 'رمز خاطئ'); setLoading(false); return }
 
-    // تعيين الجلسة في المتصفح
     await supabase.auth.setSession({
       access_token: data.access_token,
       refresh_token: data.refresh_token,
     })
-
     router.push('/dashboard')
   }
 
@@ -64,14 +69,15 @@ export default function LoginPage() {
               <p className="text-sm text-[#6B7280] mb-6">سيصلك رمز التحقق على واتساب</p>
 
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1">رقم الجوال</label>
-              <div className="flex items-center border border-[#E8ECEF] rounded-xl overflow-hidden mb-4 focus-within:border-[#0F6E56]">
-                <span className="px-3 text-sm text-[#6B7280] border-l border-[#E8ECEF] bg-[#F8F9FA] py-3">🇸🇦 +966</span>
+              {/* اتجاه LTR لأن الأرقام من اليسار */}
+              <div className="flex items-center border border-[#E8ECEF] rounded-xl overflow-hidden mb-4 focus-within:border-[#0F6E56]" dir="ltr">
+                <span className="px-3 py-3 text-sm text-[#6B7280] bg-[#F8F9FA] border-r border-[#E8ECEF] whitespace-nowrap">🇸🇦 +966</span>
                 <input
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="05XXXXXXXX"
-                  className="flex-1 px-3 py-3 text-sm focus:outline-none"
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                  placeholder="5XXXXXXXX"
+                  className="flex-1 px-3 py-3 text-sm focus:outline-none bg-white"
                   dir="ltr"
                 />
               </div>
@@ -80,12 +86,10 @@ export default function LoginPage() {
 
               <button
                 onClick={sendOtp}
-                disabled={loading || phone.length < 10}
+                disabled={loading || phone.replace(/\D/g, '').length < 8}
                 className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? 'جاري الإرسال...' : (
-                  <><span>📱</span> إرسال رمز واتساب</>
-                )}
+                {loading ? 'جاري الإرسال...' : <><span>📱</span> إرسال رمز واتساب</>}
               </button>
             </>
           ) : (
@@ -93,7 +97,7 @@ export default function LoginPage() {
               <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">رمز التحقق</h2>
               <div className="flex items-center gap-2 bg-[#E8F5F1] rounded-xl p-3 mb-5">
                 <span>💬</span>
-                <p className="text-sm text-[#0F6E56]">تم إرسال الرمز على واتساب إلى <strong>{formattedPhone}</strong></p>
+                <p className="text-sm text-[#0F6E56]">تم إرسال الرمز على واتساب إلى <strong dir="ltr">{formattedPhone}</strong></p>
               </div>
 
               <input

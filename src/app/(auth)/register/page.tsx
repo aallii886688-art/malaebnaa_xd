@@ -16,6 +16,12 @@ export default function RegisterPage() {
   const [formattedPhone, setFormattedPhone] = useState('')
   const [otp, setOtp] = useState('')
 
+  const buildPhone = (raw: string) => {
+    const digits = raw.replace(/\D/g, '')
+    if (digits.startsWith('0')) return '+966' + digits.slice(1)
+    return '+966' + digits
+  }
+
   const sendOtp = async () => {
     if (!form.full_name.trim() || !form.phone) { setError('يرجى تعبئة جميع الحقول'); return }
     setLoading(true)
@@ -23,7 +29,7 @@ export default function RegisterPage() {
     const res = await fetch('/api/auth/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: form.phone }),
+      body: JSON.stringify({ phone: buildPhone(form.phone) }),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error ?? 'حدث خطأ'); setLoading(false); return }
@@ -52,7 +58,6 @@ export default function RegisterPage() {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
     })
-
     router.push('/dashboard')
   }
 
@@ -70,18 +75,10 @@ export default function RegisterPage() {
               <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">إنشاء حساب جديد</h2>
               <p className="text-sm text-[#6B7280] mb-5">سيصلك رمز التحقق على واتساب</p>
 
-              {/* Account type */}
               <div className="grid grid-cols-2 gap-3 mb-5">
                 {(['player', 'partner'] as AccountType[]).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setForm((f) => ({ ...f, account_type: type }))}
-                    className={`border-2 rounded-xl p-3 text-center transition-all ${
-                      form.account_type === type
-                        ? 'border-[#0F6E56] bg-[#E8F5F1]'
-                        : 'border-[#E8ECEF] bg-white'
-                    }`}
-                  >
+                  <button key={type} onClick={() => setForm((f) => ({ ...f, account_type: type }))}
+                    className={`border-2 rounded-xl p-3 text-center transition-all ${form.account_type === type ? 'border-[#0F6E56] bg-[#E8F5F1]' : 'border-[#E8ECEF]'}`}>
                     <div className="text-2xl mb-1">{type === 'player' ? '🏃' : '🏟️'}</div>
                     <div className={`text-sm font-semibold ${form.account_type === type ? 'text-[#0F6E56]' : 'text-[#1A1A1A]'}`}>
                       {type === 'player' ? 'لاعب' : 'شريك'}
@@ -97,33 +94,24 @@ export default function RegisterPage() {
               )}
 
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1">الاسم الكامل</label>
-              <input
-                value={form.full_name}
+              <input value={form.full_name}
                 onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
                 placeholder="الاسم الرباعي"
-                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0F6E56] mb-4"
-              />
+                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0F6E56] mb-4" />
 
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1">رقم الجوال</label>
-              <div className="flex items-center border border-[#E8ECEF] rounded-xl overflow-hidden mb-5 focus-within:border-[#0F6E56]">
-                <span className="px-3 text-sm text-[#6B7280] border-l border-[#E8ECEF] bg-[#F8F9FA] py-3">🇸🇦 +966</span>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                  placeholder="05XXXXXXXX"
-                  className="flex-1 px-3 py-3 text-sm focus:outline-none"
-                  dir="ltr"
-                />
+              <div className="flex items-center border border-[#E8ECEF] rounded-xl overflow-hidden mb-5 focus-within:border-[#0F6E56]" dir="ltr">
+                <span className="px-3 py-3 text-sm text-[#6B7280] bg-[#F8F9FA] border-r border-[#E8ECEF] whitespace-nowrap">🇸🇦 +966</span>
+                <input type="tel" value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 9) }))}
+                  placeholder="5XXXXXXXX"
+                  className="flex-1 px-3 py-3 text-sm focus:outline-none bg-white"
+                  dir="ltr" />
               </div>
 
               {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
-
-              <button
-                onClick={sendOtp}
-                disabled={loading}
-                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-              >
+              <button onClick={sendOtp} disabled={loading}
+                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
                 {loading ? 'جاري الإرسال...' : <><span>📱</span> إرسال رمز واتساب</>}
               </button>
             </>
@@ -132,33 +120,23 @@ export default function RegisterPage() {
               <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">رمز التحقق</h2>
               <div className="flex items-center gap-2 bg-[#E8F5F1] rounded-xl p-3 mb-5">
                 <span>💬</span>
-                <p className="text-sm text-[#0F6E56]">تم إرسال الرمز على واتساب إلى <strong>{formattedPhone}</strong></p>
+                <p className="text-sm text-[#0F6E56]">تم إرسال الرمز على واتساب إلى <strong dir="ltr">{formattedPhone}</strong></p>
               </div>
 
-              <input
-                type="text"
-                value={otp}
+              <input type="text" value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="• • • • • •"
-                maxLength={6}
+                placeholder="• • • • • •" maxLength={6}
                 className="w-full border border-[#E8ECEF] rounded-xl px-4 py-4 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-[#0F6E56] mb-4"
-                dir="ltr"
-              />
+                dir="ltr" />
 
               {error && <p className="text-red-500 text-xs mb-3 text-center">{error}</p>}
 
-              <button
-                onClick={verifyOtp}
-                disabled={loading || otp.length < 6}
-                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 mb-3"
-              >
+              <button onClick={verifyOtp} disabled={loading || otp.length < 6}
+                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 mb-3">
                 {loading ? 'جاري التحقق...' : 'إنشاء الحساب'}
               </button>
-
               <button onClick={() => { setStep('form'); setOtp(''); setError('') }}
-                className="w-full text-sm text-[#6B7280] py-2">
-                ← رجوع
-              </button>
+                className="w-full text-sm text-[#6B7280] py-2">← رجوع</button>
             </>
           )}
         </div>
