@@ -29,19 +29,11 @@ export default function FacilityDetailPage() {
   const [facility, setFacility] = useState<Facility | null>(null)
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [loading, setLoading] = useState(true)
-
-  // booking state
-  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [selectedDate, setSelectedDate] = useState('')
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null)
-  const [booking, setBooking] = useState(false)
-  const [bookingDone, setBookingDone] = useState(false)
-  const [bookingError, setBookingError] = useState('')
 
   useEffect(() => {
-    // default to today
-    const today = new Date()
-    setSelectedDate(today.toISOString().split('T')[0])
-
+    setSelectedDate(new Date().toISOString().split('T')[0])
     const supabase = createClient()
     Promise.all([
       supabase.from('facilities').select('*').eq('id', id).single(),
@@ -56,52 +48,15 @@ export default function FacilityDetailPage() {
   const dayOfWeek = selectedDate ? new Date(selectedDate + 'T12:00:00').getDay() : -1
   const daySlots = slots.filter((s) => s.day_of_week === dayOfWeek)
 
-  const confirmBooking = async () => {
+  const goToConfirm = () => {
     if (!selectedSlot || !selectedDate) return
-    setBooking(true); setBookingError('')
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
-
-    const commission = Math.round(selectedSlot.price_sar * 0.05 * 100) / 100
-    const net = selectedSlot.price_sar - commission
-
-    const { data, error } = await supabase.from('bookings').insert({
-      facility_id: id,
-      user_id: user.id,
-      booking_date: selectedDate,
-      start_hour: selectedSlot.start_hour,
-      end_hour: selectedSlot.end_hour,
-      total_amount_sar: selectedSlot.price_sar,
-      commission_sar: commission,
-      net_amount_sar: net,
-      status: 'pending_payment',
-    }).select('id').single()
-
-    if (error) { setBookingError(error.message); setBooking(false); return }
-    // توجيه لصفحة الدفع
-    router.push(`/payment?booking_id=${data?.id}&amount=${selectedSlot.price_sar}&facility=${encodeURIComponent(facility!.name)}`)
-    setBooking(false)
+    router.push(
+      `/player/book/confirm?facility_id=${id}&slot_id=${selectedSlot.id}&date=${selectedDate}`
+    )
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>
   if (!facility) return <div className="min-h-screen flex items-center justify-center text-red-500">الملعب غير موجود</div>
-
-  if (bookingDone) return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center bg-[#F8F9FA]">
-      <div className="text-6xl mb-4">✅</div>
-      <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">تم الحجز بنجاح!</h2>
-      <p className="text-sm text-[#6B7280] mb-1">{facility.name}</p>
-      <p className="text-sm text-[#6B7280] mb-1">{new Date(selectedDate + 'T12:00:00').toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-      <p className="text-sm text-[#6B7280] mb-6">{fmt(selectedSlot!.start_hour)} – {fmt(selectedSlot!.end_hour)}</p>
-      <p className="text-lg font-bold text-[#0F6E56] mb-6">{selectedSlot!.price_sar} ريال</p>
-      <p className="text-xs text-[#9CA3AF] mb-6">سيتم التأكيد بعد إتمام الدفع</p>
-      <button onClick={() => router.push('/player')}
-        className="bg-[#0F6E56] text-white px-6 py-3 rounded-2xl font-bold">
-        العودة للرئيسية
-      </button>
-    </div>
-  )
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
@@ -116,8 +71,26 @@ export default function FacilityDetailPage() {
         )}
       </header>
 
-      <div className="px-4 py-4 space-y-4 pb-10">
-        {/* Info card */}
+      {/* مؤشر الخطوات */}
+      <div className="bg-white border-b border-[#E8ECEF] px-4 py-3 flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <span className="w-6 h-6 rounded-full bg-[#0F6E56] text-white text-xs flex items-center justify-center font-bold">✓</span>
+          <span className="text-xs text-[#0F6E56] font-medium">الملعب</span>
+        </div>
+        <div className="flex-1 h-0.5 bg-[#0F6E56]" />
+        <div className="flex items-center gap-1.5">
+          <span className="w-6 h-6 rounded-full bg-[#0F6E56] text-white text-xs flex items-center justify-center font-bold">2</span>
+          <span className="text-xs text-[#0F6E56] font-medium">الوقت</span>
+        </div>
+        <div className="flex-1 h-0.5 bg-[#E8ECEF]" />
+        <div className="flex items-center gap-1.5">
+          <span className="w-6 h-6 rounded-full bg-[#E8ECEF] text-[#9CA3AF] text-xs flex items-center justify-center font-bold">3</span>
+          <span className="text-xs text-[#9CA3AF]">التأكيد</span>
+        </div>
+      </div>
+
+      <div className="px-4 py-4 space-y-4 pb-32">
+        {/* معلومات الملعب */}
         <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-2">
           <p className="text-sm text-[#6B7280]">📍 {facility.city}{facility.district ? ` · ${facility.district}` : ''}</p>
           {facility.address && <p className="text-xs text-[#9CA3AF]">{facility.address}</p>}
@@ -129,7 +102,7 @@ export default function FacilityDetailPage() {
           {facility.description && <p className="text-xs text-[#6B7280] pt-1">{facility.description}</p>}
         </div>
 
-        {/* Date picker */}
+        {/* اختيار التاريخ */}
         <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
           <label className="block text-sm font-bold text-[#1A1A1A] mb-2">اختر التاريخ</label>
           <input type="date" value={selectedDate} min={new Date().toISOString().split('T')[0]}
@@ -137,7 +110,7 @@ export default function FacilityDetailPage() {
             className="w-full border border-[#E8ECEF] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0F6E56]" />
         </div>
 
-        {/* Time slots */}
+        {/* الأوقات المتاحة */}
         {selectedDate && (
           <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
             <p className="text-sm font-bold text-[#1A1A1A] mb-3">
@@ -158,31 +131,18 @@ export default function FacilityDetailPage() {
             )}
           </div>
         )}
+      </div>
 
-        {/* Booking summary + confirm */}
+      {/* زر التالي ثابت في الأسفل */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8ECEF] px-4 py-4">
         {selectedSlot && (
-          <div className="bg-[#E8F5F1] rounded-2xl border border-[#0F6E56] p-4 space-y-2">
-            <p className="text-sm font-bold text-[#0F6E56]">ملخص الحجز</p>
-            <div className="flex justify-between text-xs text-[#1A1A1A]">
-              <span>التاريخ</span>
-              <span>{new Date(selectedDate + 'T12:00:00').toLocaleDateString('ar-SA')}</span>
-            </div>
-            <div className="flex justify-between text-xs text-[#1A1A1A]">
-              <span>الوقت</span>
-              <span dir="ltr">{fmt(selectedSlot.start_hour)} – {fmt(selectedSlot.end_hour)}</span>
-            </div>
-            <div className="flex justify-between text-sm font-bold text-[#1A1A1A] pt-1 border-t border-[#0F6E56]/20">
-              <span>الإجمالي</span>
-              <span>{selectedSlot.price_sar} ريال</span>
-            </div>
-          </div>
+          <p className="text-xs text-[#6B7280] text-center mb-2">
+            {fmt(selectedSlot.start_hour)} – {fmt(selectedSlot.end_hour)} · <strong className="text-[#0F6E56]">{selectedSlot.price_sar} ريال</strong>
+          </p>
         )}
-
-        {bookingError && <p className="text-red-500 text-xs text-center">{bookingError}</p>}
-
-        <button onClick={confirmBooking} disabled={!selectedSlot || booking}
-          className="w-full bg-[#0F6E56] text-white py-3.5 rounded-2xl font-bold text-sm disabled:opacity-40">
-          {booking ? 'جاري الحجز...' : selectedSlot ? `احجز الآن — ${selectedSlot.price_sar} ريال` : 'اختر وقتاً للحجز'}
+        <button onClick={goToConfirm} disabled={!selectedSlot}
+          className="w-full bg-[#0F6E56] text-white py-3.5 rounded-2xl font-bold text-sm disabled:opacity-40 transition-opacity">
+          {selectedSlot ? 'التالي — تأكيد الحجز ←' : 'اختر وقتاً للمتابعة'}
         </button>
       </div>
     </div>
