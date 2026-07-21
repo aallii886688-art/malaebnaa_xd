@@ -7,93 +7,87 @@ export default async function PartnerDashboard() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
-  const { data: partnerRoles } = await supabase
-    .from('partner_roles')
-    .select('activity, status')
-    .eq('user_id', user.id)
+  const { data: partnerRoles } = await supabase.from('partner_roles').select('activity, status').eq('user_id', user.id)
 
   const approvedRoles = partnerRoles?.filter((r) => r.status === 'approved') ?? []
-  const pendingRoles = partnerRoles?.filter((r) => r.status === 'pending') ?? []
+  const pendingRoles  = partnerRoles?.filter((r) => r.status === 'pending') ?? []
+  const allActivities = ['facility_manager', 'academy_manager', 'tournament_manager']
+  const unactivated   = allActivities.filter((a) => !partnerRoles?.some((r) => r.activity === a))
 
-  const activityLabels: Record<string, { label: string; icon: string }> = {
-    facility_manager: { label: 'مسؤول ملعب', icon: '⚽' },
-    academy_manager: { label: 'مسؤول أكاديمية', icon: '🏅' },
-    tournament_manager: { label: 'مسؤول بطولة', icon: '🏆' },
+  const activityInfo: Record<string, { label: string; icon: string; href: string; grad: string }> = {
+    facility_manager:   { label: 'ملاعبي', icon: '⚽', href: '/partner/facilities', grad: 'linear-gradient(135deg,#1a4d2e,#2d7a4f)' },
+    academy_manager:    { label: 'أكاديمياتي', icon: '🏅', href: '/partner/academies', grad: 'linear-gradient(135deg,#2e1a4d,#5a2d9f)' },
+    tournament_manager: { label: 'بطولاتي', icon: '🏆', href: '/partner/tournaments', grad: 'linear-gradient(135deg,#4d2e1a,#9f5a2d)' },
   }
 
-  const allActivities = ['facility_manager', 'academy_manager', 'tournament_manager']
-  const unactivated = allActivities.filter(
-    (a) => !partnerRoles?.some((r) => r.activity === a)
-  )
+  const quickLinks = [
+    { href: '/partner/bookings', icon: '📅', label: 'الحجوزات' },
+    { href: '/partner/wallet',   icon: '💰', label: 'المحفظة' },
+    { href: '/partner/reports',  icon: '📊', label: 'التقارير' },
+    { href: '/partner/staff',    icon: '👥', label: 'الموظفون' },
+    { href: '/player',           icon: '🏃', label: 'وضع اللاعب' },
+  ]
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4">
-        <p className="text-xs opacity-80">لوحة الشريك</p>
-        <h1 className="text-lg font-bold">{profile?.full_name}</h1>
-      </header>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', paddingBottom: 32 }}>
+      {/* Header */}
+      <div style={{ background: 'linear-gradient(135deg,#0F6E56,#1A9870)', padding: '52px 20px 28px' }}>
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>لوحة الشريك</p>
+        <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, marginTop: 4 }}>{profile?.full_name}</h1>
+      </div>
 
-      <div className="px-4 py-5 space-y-4">
-        {/* Active activities */}
+      <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {/* Approved roles */}
         {approvedRoles.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-bold text-[#1A1A1A]">أنشطتي المفعلة</h2>
-            {approvedRoles.map((role) => {
-              const info = activityLabels[role.activity]
-              const href = role.activity === 'facility_manager' ? '/partner/facilities'
-                : role.activity === 'academy_manager' ? '/partner/academies'
-                : '/partner/tournaments'
-
-              return (
-                <a key={role.activity} href={href}
-                  className="flex items-center gap-3 bg-white rounded-2xl border border-[#E8ECEF] p-4">
-                  <span className="text-3xl">{info.icon}</span>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm text-[#1A1A1A]">{info.label}</p>
-                    <p className="text-xs text-[#0F6E56]">مفعل</p>
-                  </div>
-                  <span className="text-[#6B7280]">←</span>
-                </a>
-              )
-            })}
+          <div>
+            <p style={{ color: 'var(--text)', fontWeight: 700, fontSize: 15, marginBottom: 12 }}>أنشطتي المفعلة</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {approvedRoles.map((role) => {
+                const info = activityInfo[role.activity]
+                return (
+                  <a key={role.activity} href={info.href}
+                    style={{ background: info.grad, borderRadius: 20, padding: '18px', display: 'flex', alignItems: 'center', gap: 14, textDecoration: 'none' }}>
+                    <span style={{ fontSize: 32 }}>{info.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ color: '#fff', fontWeight: 700, fontSize: 17 }}>{info.label}</p>
+                      <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 2 }}>مفعّل ✓</p>
+                    </div>
+                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 20 }}>←</span>
+                  </a>
+                )
+              })}
+            </div>
           </div>
         )}
 
         {/* Pending */}
         {pendingRoles.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="text-sm font-bold text-[#1A1A1A]">طلبات قيد المراجعة</h2>
-            {pendingRoles.map((role) => {
-              const info = activityLabels[role.activity]
-              return (
-                <div key={role.activity} className="flex items-center gap-3 bg-[#FFF8E8] rounded-2xl border border-[#C17B1A] p-3">
-                  <span className="text-2xl">{info.icon}</span>
-                  <div>
-                    <p className="text-sm font-medium text-[#1A1A1A]">{info.label}</p>
-                    <p className="text-xs text-[#C17B1A]">قيد المراجعة</p>
-                  </div>
-                </div>
-              )
-            })}
+          <div style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)', borderRadius: 16, padding: '14px 16px' }}>
+            <p style={{ color: 'var(--gold)', fontWeight: 700, fontSize: 14, marginBottom: 8 }}>⏳ طلبات قيد المراجعة</p>
+            {pendingRoles.map((role) => (
+              <p key={role.activity} style={{ color: 'var(--text2)', fontSize: 13, marginTop: 4 }}>
+                {activityInfo[role.activity]?.icon} {activityInfo[role.activity]?.label}
+              </p>
+            ))}
           </div>
         )}
 
         {/* Unactivated */}
         {unactivated.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4">
-            <h2 className="text-sm font-bold text-[#1A1A1A] mb-3">تفعيل نشاط جديد</h2>
-            <div className="space-y-2">
+          <div>
+            <p style={{ color: 'var(--text)', fontWeight: 700, fontSize: 15, marginBottom: 12 }}>تفعيل نشاط جديد</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {unactivated.map((activity) => {
-                const info = activityLabels[activity]
+                const info = activityInfo[activity]
                 return (
                   <a key={activity} href={`/partner/activate/${activity}`}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-[#E8ECEF] hover:border-[#0F6E56] hover:bg-[#E8F5F1] transition-all">
-                    <span className="text-2xl">{info.icon}</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-[#1A1A1A]">{info.label}</p>
-                      <p className="text-xs text-[#6B7280]">اضغط للتقديم</p>
+                    style={{ background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+                    <span style={{ fontSize: 24 }}>{info.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ color: 'var(--text)', fontWeight: 600, fontSize: 15 }}>{info.label.replace('تي', '')}</p>
+                      <p style={{ color: 'var(--text3)', fontSize: 12, marginTop: 2 }}>اضغط للتقديم</p>
                     </div>
-                    <span className="text-xs bg-[#E8F5F1] text-[#0F6E56] px-2 py-0.5 rounded-full">+ تفعيل</span>
+                    <span style={{ background: 'var(--primary-dim)', color: 'var(--primary)', fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 20 }}>+ تفعيل</span>
                   </a>
                 )
               })}
@@ -102,27 +96,17 @@ export default async function PartnerDashboard() {
         )}
 
         {/* Quick links */}
-        <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-2">
-          <a href="/partner/bookings" className="flex items-center justify-between py-2 border-b border-[#F8F9FA]">
-            <span className="text-sm font-medium text-[#1A1A1A]">📅 الحجوزات</span>
-            <span className="text-[#6B7280] text-sm">←</span>
-          </a>
-          <a href="/partner/wallet" className="flex items-center justify-between py-2 border-b border-[#F8F9FA]">
-            <span className="text-sm font-medium text-[#1A1A1A]">💰 محفظتي وأرباحي</span>
-            <span className="text-[#6B7280] text-sm">←</span>
-          </a>
-          <a href="/partner/reports" className="flex items-center justify-between py-2 border-b border-[#F8F9FA]">
-            <span className="text-sm font-medium text-[#1A1A1A]">📊 التقارير والإحصاءات</span>
-            <span className="text-[#6B7280] text-sm">←</span>
-          </a>
-          <a href="/partner/staff" className="flex items-center justify-between py-2 border-b border-[#F8F9FA]">
-            <span className="text-sm font-medium text-[#1A1A1A]">👥 إدارة الموظفين</span>
-            <span className="text-[#6B7280] text-sm">←</span>
-          </a>
-          <a href="/player" className="flex items-center justify-between py-2">
-            <span className="text-sm font-medium text-[#1A1A1A]">🏃 وضع اللاعب</span>
-            <span className="text-[#6B7280] text-sm">←</span>
-          </a>
+        <div>
+          <p style={{ color: 'var(--text)', fontWeight: 700, fontSize: 15, marginBottom: 12 }}>روابط سريعة</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {quickLinks.map((item) => (
+              <a key={item.href} href={item.href}
+                style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: '16px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', boxShadow: 'var(--shadow)' }}>
+                <span style={{ fontSize: 22 }}>{item.icon}</span>
+                <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14 }}>{item.label}</span>
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </div>

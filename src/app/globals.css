@@ -1,51 +1,100 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ── Light Theme (default) ── */
 :root {
-  --green-primary: #0F6E56;
-  --green-light: #E8F5F1;
-  --green-medium: #1A8A6B;
-  --purple-primary: #6B3FA0;
-  --purple-light: #F0E8FF;
-  --gold-primary: #C17B1A;
-  --gold-light: #FFF8E8;
-  --background: #F8F9FA;
-  --foreground: #1A1A1A;
-  --card: #FFFFFF;
-  --border: #E8ECEF;
-  --text-muted: #6B7280;
+  --bg:          #F2F2F7;
+  --bg2:         #FFFFFF;
+  --card:        #FFFFFF;
+  --card2:       #F8F8FA;
+  --border:      #E5E5EA;
+  --text:        #111111;
+  --text2:       #3C3C43;
+  --text3:       #8E8E93;
+  --primary:     #0F6E56;
+  --primary-fg:  #FFFFFF;
+  --primary-dim: rgba(15,110,86,0.12);
+  --gold:        #C17B1A;
+  --gold-dim:    #FFF8E8;
+  --danger:      #FF3B30;
+  --danger-dim:  #FFF1F0;
+  --nav-bg:      rgba(255,255,255,0.92);
+  --overlay:     rgba(0,0,0,0.45);
+  --shadow:      0 2px 16px rgba(0,0,0,0.08);
+  --shadow-lg:   0 8px 40px rgba(0,0,0,0.14);
+}
+
+/* ── Dark Theme ── */
+[data-theme="dark"] {
+  --bg:          #0A0A0A;
+  --bg2:         #111111;
+  --card:        #1C1C1E;
+  --card2:       #2C2C2E;
+  --border:      #38383A;
+  --text:        #FFFFFF;
+  --text2:       rgba(235,235,245,0.80);
+  --text3:       #8E8E93;
+  --primary:     #12B886;
+  --primary-fg:  #FFFFFF;
+  --primary-dim: rgba(18,184,134,0.14);
+  --gold:        #FFB800;
+  --gold-dim:    rgba(255,184,0,0.12);
+  --danger:      #FF453A;
+  --danger-dim:  rgba(255,69,58,0.12);
+  --nav-bg:      rgba(18,18,20,0.92);
+  --overlay:     rgba(0,0,0,0.70);
+  --shadow:      0 2px 16px rgba(0,0,0,0.40);
+  --shadow-lg:   0 8px 40px rgba(0,0,0,0.60);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-green-primary: var(--green-primary);
-  --color-green-light: var(--green-light);
-  --color-purple-primary: var(--purple-primary);
-  --color-purple-light: var(--purple-light);
-  --color-gold-primary: var(--gold-primary);
-  --color-gold-light: var(--gold-light);
-  --color-card: var(--card);
-  --color-border: var(--border);
-  --color-muted: var(--text-muted);
+  --color-bg:      var(--bg);
+  --color-bg2:     var(--bg2);
+  --color-card:    var(--card);
+  --color-card2:   var(--card2);
+  --color-border:  var(--border);
+  --color-text:    var(--text);
+  --color-text2:   var(--text2);
+  --color-text3:   var(--text3);
+  --color-primary: var(--primary);
+  --color-gold:    var(--gold);
+  --color-danger:  var(--danger);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  direction: rtl;
-}
+* { box-sizing: border-box; }
+html { direction: rtl; height: 100%; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'IBM Plex Sans Arabic', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans Arabic', system-ui, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+  transition: background 0.25s, color 0.25s;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 4px; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.press:active { transform: scale(0.97); transition: transform 0.1s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.28s ease both; }
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--card2) 25%, var(--border) 50%, var(--card2) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 10px;
+}

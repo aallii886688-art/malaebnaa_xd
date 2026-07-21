@@ -2,26 +2,33 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import BottomNav from '@/components/BottomNav'
 
 type Facility = {
   id: string; name: string; sport_type: string; city: string; district: string | null
-  description: string | null; rating: number; reviews_count: number; is_active: boolean
+  description: string | null; rating: number; reviews_count: number
 }
 
 const sportOptions = [
-  { value: '', label: 'الكل' },
-  { value: 'football', label: '⚽ قدم' },
-  { value: 'futsal', label: '🥅 فوتسال' },
-  { value: 'padel', label: '🎾 بادل' },
-  { value: 'basketball', label: '🏀 سلة' },
-  { value: 'volleyball', label: '🏐 طائرة' },
-  { value: 'tennis', label: '🎾 تنس' },
+  { value: '', label: 'الكل', icon: '🏟️' },
+  { value: 'football', label: 'قدم', icon: '⚽' },
+  { value: 'futsal', label: 'فوتسال', icon: '🥅' },
+  { value: 'padel', label: 'بادل', icon: '🎾' },
+  { value: 'basketball', label: 'سلة', icon: '🏀' },
+  { value: 'volleyball', label: 'طائرة', icon: '🏐' },
+  { value: 'tennis', label: 'تنس', icon: '🎾' },
 ]
 
-const sportLabel: Record<string, string> = {
-  football: '⚽ كرة قدم', futsal: '🥅 فوتسال', padel: '🎾 بادل',
-  basketball: '🏀 كرة سلة', volleyball: '🏐 كرة طائرة', tennis: '🎾 تنس',
-  squash: '🏸 سكواش', badminton: '🏸 ريشة طائرة', swimming: '🏊 سباحة', other: '🏅 أخرى',
+const sportGradient: Record<string, string> = {
+  football: 'linear-gradient(135deg,#1a4d2e,#2d7a4f)',
+  futsal:   'linear-gradient(135deg,#1a3a5c,#2d6a9f)',
+  padel:    'linear-gradient(135deg,#4d1a1a,#9f2d2d)',
+  basketball:'linear-gradient(135deg,#4d2e1a,#9f5a2d)',
+  volleyball:'linear-gradient(135deg,#2e1a4d,#5a2d9f)',
+  default:  'linear-gradient(135deg,#1a2d4d,#2d4d7a)',
+}
+const sportEmoji: Record<string, string> = {
+  football:'⚽', futsal:'🥅', padel:'🎾', basketball:'🏀', volleyball:'🏐', tennis:'🎾', squash:'🏸', swimming:'🏊', other:'🏅',
 }
 
 export default function PlayerFacilitiesPage() {
@@ -44,87 +51,83 @@ export default function PlayerFacilitiesPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white text-xl">←</button>
-        <div className="flex-1">
-          <p className="text-xs opacity-80">الخطوة 1 من 3</p>
-          <h1 className="text-lg font-bold">اختر الملعب</h1>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', paddingBottom: 80 }}>
+      {/* Header */}
+      <div style={{ background: 'var(--bg2)', padding: '20px 16px 0', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 30 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <button onClick={() => router.back()} style={{ color: 'var(--text3)', fontSize: 20, background: 'none', border: 'none', cursor: 'pointer' }}>←</button>
+          <h1 style={{ color: 'var(--text)', fontSize: 18, fontWeight: 700 }}>الملاعب</h1>
         </div>
-      </header>
-
-      {/* شريط البحث */}
-      <div className="px-4 pt-3">
-        <div className="bg-white rounded-xl border border-[#E8ECEF] px-4 py-3 flex items-center gap-2">
-          <span className="text-[#6B7280]">🔍</span>
+        {/* Search */}
+        <div style={{ background: 'var(--card2)', border: '1px solid var(--border)', borderRadius: 14, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{ color: 'var(--text3)', fontSize: 16 }}>🔍</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)}
             placeholder="ابحث باسم الملعب أو المدينة..."
-            className="flex-1 text-sm focus:outline-none" />
-          {search && (
-            <button onClick={() => setSearch('')} className="text-[#9CA3AF] text-sm">✕</button>
-          )}
+            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 14 }} />
+          {search && <button onClick={() => setSearch('')} style={{ color: 'var(--text3)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>✕</button>}
+        </div>
+        {/* Sport filter */}
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 14 }} className="no-scrollbar">
+          {sportOptions.map((s) => (
+            <button key={s.value} onClick={() => setSport(s.value)} className="press"
+              style={{ flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: `1px solid ${sport === s.value ? 'var(--primary)' : 'var(--border)'}`, background: sport === s.value ? 'var(--primary-dim)' : 'var(--card)', color: sport === s.value ? 'var(--primary)' : 'var(--text3)', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+              {s.icon} {s.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* فلتر الرياضة */}
-      <div className="flex gap-2 px-4 py-3 overflow-x-auto no-scrollbar">
-        {sportOptions.map((s) => (
-          <button key={s.value} onClick={() => setSport(s.value)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-              sport === s.value ? 'bg-[#0F6E56] text-white' : 'bg-white border border-[#E8ECEF] text-[#6B7280]'
-            }`}>
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="px-4 pb-6 space-y-3">
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl border border-[#E8ECEF] p-4 animate-pulse">
-                <div className="h-4 bg-[#E8ECEF] rounded w-2/3 mb-2" />
-                <div className="h-3 bg-[#E8ECEF] rounded w-1/3" />
+          [1,2,3,4].map((i) => (
+            <div key={i} style={{ display: 'flex', gap: 12, background: 'var(--card)', borderRadius: 18, overflow: 'hidden', border: '1px solid var(--border)' }}>
+              <div className="skeleton" style={{ width: 100, height: 100, borderRadius: 0, flexShrink: 0 }} />
+              <div style={{ flex: 1, padding: '14px 12px 14px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="skeleton" style={{ height: 14, width: '70%' }} />
+                <div className="skeleton" style={{ height: 11, width: '40%' }} />
+                <div className="skeleton" style={{ height: 11, width: '55%' }} />
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-5xl mb-3">🏟️</p>
-            <p className="text-sm font-semibold text-[#1A1A1A] mb-1">لا توجد ملاعب</p>
-            <p className="text-xs text-[#6B7280]">
-              {search ? `لا توجد نتائج لـ "${search}"` : 'لا توجد ملاعب متاحة حالياً'}
+          <div style={{ textAlign: 'center', padding: '60px 0' }}>
+            <div style={{ fontSize: 56, marginBottom: 12 }}>🏟️</div>
+            <p style={{ color: 'var(--text)', fontWeight: 600, fontSize: 16 }}>لا توجد ملاعب</p>
+            <p style={{ color: 'var(--text3)', fontSize: 14, marginTop: 4 }}>
+              {search ? `لا نتائج لـ "${search}"` : 'لا توجد ملاعب متاحة الآن'}
             </p>
-            {search && (
-              <button onClick={() => setSearch('')} className="mt-3 text-xs text-[#0F6E56] underline">
-                مسح البحث
-              </button>
-            )}
           </div>
         ) : (
-          filtered.map((f) => (
-            <button key={f.id} onClick={() => router.push(`/player/facilities/${f.id}`)}
-              className="w-full bg-white rounded-2xl border border-[#E8ECEF] p-4 text-right hover:border-[#0F6E56] transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="font-bold text-[#1A1A1A] text-sm">{f.name}</p>
-                  <p className="text-xs text-[#6B7280] mt-0.5">{sportLabel[f.sport_type]}</p>
-                  <p className="text-xs text-[#6B7280]">📍 {f.city}{f.district ? ` · ${f.district}` : ''}</p>
-                  {f.description && (
-                    <p className="text-xs text-[#9CA3AF] mt-1 line-clamp-1">{f.description}</p>
+          filtered.map((f, i) => (
+            <button key={f.id} onClick={() => router.push(`/player/facilities/${f.id}`)} className="press fade-up"
+              style={{ animationDelay: `${i * 40}ms`, display: 'flex', gap: 0, background: 'var(--card)', borderRadius: 18, overflow: 'hidden', border: '1px solid var(--border)', textAlign: 'right', cursor: 'pointer', boxShadow: 'var(--shadow)', width: '100%' }}>
+              {/* image / gradient */}
+              <div style={{ width: 100, flexShrink: 0, background: sportGradient[f.sport_type] ?? sportGradient.default, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
+                {sportEmoji[f.sport_type] ?? '🏅'}
+              </div>
+              <div style={{ flex: 1, padding: '14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <p style={{ color: 'var(--text)', fontWeight: 700, fontSize: 15 }}>{f.name}</p>
+                  {f.reviews_count > 0 && (
+                    <span style={{ color: 'var(--gold)', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>⭐ {f.rating}</span>
                   )}
                 </div>
-                <div className="flex flex-col items-end gap-2 mr-2">
-                  {f.reviews_count > 0 && (
-                    <span className="text-xs font-medium text-[#C17B1A]">⭐ {f.rating}</span>
-                  )}
-                  <span className="text-[#9CA3AF] text-sm">←</span>
+                <p style={{ color: 'var(--text3)', fontSize: 12 }}>📍 {f.city}{f.district ? ` · ${f.district}` : ''}</p>
+                {f.description && (
+                  <p style={{ color: 'var(--text3)', fontSize: 12, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' as const }}>{f.description}</p>
+                )}
+                <div style={{ marginTop: 4 }}>
+                  <span style={{ background: 'var(--primary-dim)', color: 'var(--primary)', fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20 }}>
+                    احجز الآن
+                  </span>
                 </div>
               </div>
             </button>
           ))
         )}
       </div>
+
+      <BottomNav />
     </div>
   )
 }

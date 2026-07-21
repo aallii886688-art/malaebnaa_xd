@@ -1,177 +1,141 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
 
-type Facility = {
-  id: string; name: string; city: string; district: string | null; sport_type: string
-}
-
-type TimeSlot = {
-  id: string; start_hour: number; end_hour: number; price_sar: number
-}
+type Facility = { id: string; name: string; city: string; district: string | null; sport_type: string }
+type TimeSlot  = { id: string; start_hour: number; end_hour: number; price_sar: number }
 
 const fmt = (h: number) => `${h % 12 === 0 ? 12 : h % 12}:00 ${h < 12 ? 'ص' : 'م'}`
-
-const sportLabel: Record<string, string> = {
-  football: '⚽ كرة قدم', futsal: '🥅 فوتسال', padel: '🎾 بادل',
-  basketball: '🏀 كرة سلة', volleyball: '🏐 كرة طائرة', tennis: '🎾 تنس',
-  squash: '🏸 سكواش', badminton: '🏸 ريشة طائرة', swimming: '🏊 سباحة', other: '🏅 أخرى',
-}
+const sportEmoji: Record<string, string> = { football:'⚽', futsal:'🥅', padel:'🎾', basketball:'🏀', volleyball:'🏐', tennis:'🎾', other:'🏅' }
 
 function ConfirmContent() {
   const router = useRouter()
   const params = useSearchParams()
   const facilityId = params.get('facility_id')
-  const slotId = params.get('slot_id')
-  const date = params.get('date')
+  const slotId     = params.get('slot_id')
+  const date       = params.get('date')
 
   const [facility, setFacility] = useState<Facility | null>(null)
-  const [slot, setSlot] = useState<TimeSlot | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [slot,     setSlot]     = useState<TimeSlot | null>(null)
+  const [loading,  setLoading]  = useState(true)
   const [confirming, setConfirming] = useState(false)
-  const [error, setError] = useState('')
+  const [error,    setError]    = useState('')
 
   useEffect(() => {
     if (!facilityId || !slotId || !date) { router.push('/player/facilities'); return }
     const supabase = createClient()
     Promise.all([
-      supabase.from('facilities').select('id, name, city, district, sport_type').eq('id', facilityId).single(),
-      supabase.from('facility_time_slots').select('id, start_hour, end_hour, price_sar').eq('id', slotId).single(),
+      supabase.from('facilities').select('id,name,city,district,sport_type').eq('id', facilityId).single(),
+      supabase.from('facility_time_slots').select('id,start_hour,end_hour,price_sar').eq('id', slotId).single(),
     ]).then(([{ data: f }, { data: s }]) => {
       if (!f || !s) { router.push('/player/facilities'); return }
-      setFacility(f as Facility)
-      setSlot(s as TimeSlot)
-      setLoading(false)
+      setFacility(f as Facility); setSlot(s as TimeSlot); setLoading(false)
     })
   }, [facilityId, slotId, date, router])
 
   const confirmBooking = async () => {
     if (!facility || !slot || !date) return
     setConfirming(true); setError('')
-
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
-
     const commission = Math.round(slot.price_sar * 0.05 * 100) / 100
-    const net = slot.price_sar - commission
-
     const { data, error: err } = await supabase.from('bookings').insert({
-      facility_id: facility.id,
-      user_id: user.id,
-      booking_date: date,
-      start_hour: slot.start_hour,
-      end_hour: slot.end_hour,
-      total_amount_sar: slot.price_sar,
-      commission_sar: commission,
-      net_amount_sar: net,
+      facility_id: facility.id, user_id: user.id, booking_date: date,
+      start_hour: slot.start_hour, end_hour: slot.end_hour,
+      total_amount_sar: slot.price_sar, commission_sar: commission, net_amount_sar: slot.price_sar - commission,
       status: 'pending_payment',
     }).select('id').single()
-
     if (err) { setError('فشل إنشاء الحجز، حاول مجدداً'); setConfirming(false); return }
-
-    router.push(
-      `/payment?booking_id=${data?.id}&amount=${slot.price_sar}&facility=${encodeURIComponent(facility.name)}`
-    )
+    router.push(`/payment?booking_id=${data?.id}&amount=${slot.price_sar}&facility=${encodeURIComponent(facility.name)}`)
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>
+  if (loading) return (
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: 'var(--text3)' }}>جاري التحميل...</p>
+    </div>
+  )
 
-  const dateObj = date ? new Date(date + 'T12:00:00') : null
+  const dateObj   = date ? new Date(date + 'T12:00:00') : null
   const dateLabel = dateObj?.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <header className="bg-[#0F6E56] text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white text-xl">←</button>
-        <div>
-          <p className="text-xs opacity-80">الخطوة الأخيرة</p>
-          <h1 className="text-base font-bold">تأكيد الحجز</h1>
-        </div>
-      </header>
-
-      {/* مؤشر الخطوات */}
-      <div className="bg-white border-b border-[#E8ECEF] px-4 py-3 flex items-center gap-2">
-        <div className="flex items-center gap-1.5">
-          <span className="w-6 h-6 rounded-full bg-[#0F6E56] text-white text-xs flex items-center justify-center font-bold">✓</span>
-          <span className="text-xs text-[#0F6E56] font-medium">الملعب</span>
-        </div>
-        <div className="flex-1 h-0.5 bg-[#0F6E56]" />
-        <div className="flex items-center gap-1.5">
-          <span className="w-6 h-6 rounded-full bg-[#0F6E56] text-white text-xs flex items-center justify-center font-bold">✓</span>
-          <span className="text-xs text-[#0F6E56] font-medium">الوقت</span>
-        </div>
-        <div className="flex-1 h-0.5 bg-[#0F6E56]" />
-        <div className="flex items-center gap-1.5">
-          <span className="w-6 h-6 rounded-full bg-[#0F6E56] text-white text-xs flex items-center justify-center font-bold">3</span>
-          <span className="text-xs text-[#0F6E56] font-medium">التأكيد</span>
-        </div>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', paddingBottom: 140 }}>
+      {/* Header */}
+      <div style={{ background: 'var(--bg2)', padding: '52px 16px 16px', borderBottom: '1px solid var(--border)', position: 'relative' }}>
+        <button onClick={() => router.back()}
+          style={{ position: 'absolute', top: 48, right: 16, background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>←</button>
+        <p style={{ color: 'var(--text3)', fontSize: 12, textAlign: 'center' }}>الخطوة الأخيرة</p>
+        <h1 style={{ color: 'var(--text)', fontSize: 18, fontWeight: 700, textAlign: 'center', marginTop: 2 }}>تأكيد الحجز</h1>
       </div>
 
-      <div className="px-4 py-5 space-y-4 pb-32">
-        {/* بطاقة ملخص الحجز */}
-        <div className="bg-white rounded-2xl border border-[#E8ECEF] overflow-hidden">
-          <div className="bg-[#0F6E56] px-4 py-3">
-            <p className="text-white text-xs opacity-80">ملخص حجزك</p>
-            <p className="text-white font-bold">{facility?.name}</p>
+      <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Step bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {[{ n: 1, l: 'الملعب' }, { n: 2, l: 'الوقت' }, { n: 3, l: 'التأكيد' }].map((s, i) => (
+            <div key={s.n} style={{ display: 'flex', alignItems: 'center', gap: 5, flex: i < 2 ? 1 : 'unset' }}>
+              <div style={{ width: 22, height: 22, borderRadius: 11, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff', fontWeight: 700 }}>✓</div>
+              <span style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 600 }}>{s.l}</span>
+              {i < 2 && <div style={{ flex: 1, height: 1.5, background: 'var(--primary)' }} />}
+            </div>
+          ))}
+        </div>
+
+        {/* Booking summary card */}
+        <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', overflow: 'hidden', boxShadow: 'var(--shadow)' }}>
+          <div style={{ background: 'linear-gradient(135deg,#0F6E56,#1A9870)', padding: '18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 28 }}>{sportEmoji[facility?.sport_type ?? ''] ?? '🏅'}</span>
+              <div>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>ملخص حجزك</p>
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: 17 }}>{facility?.name}</p>
+              </div>
+            </div>
           </div>
-          <div className="p-4 space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-[#6B7280]">النشاط</span>
-              <span className="text-xs font-medium text-[#1A1A1A]">{sportLabel[facility?.sport_type ?? '']}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-[#6B7280]">الموقع</span>
-              <span className="text-xs font-medium text-[#1A1A1A]">{facility?.city}{facility?.district ? ` · ${facility.district}` : ''}</span>
-            </div>
-            <div className="h-px bg-[#F8F9FA]" />
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-[#6B7280]">التاريخ</span>
-              <span className="text-xs font-medium text-[#1A1A1A]">{dateLabel}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-[#6B7280]">الوقت</span>
-              <span className="text-xs font-medium text-[#1A1A1A]" dir="ltr">
-                {slot ? `${fmt(slot.start_hour)} – ${fmt(slot.end_hour)}` : ''}
-              </span>
-            </div>
-            <div className="h-px bg-[#F8F9FA]" />
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-bold text-[#1A1A1A]">الإجمالي</span>
-              <span className="text-lg font-bold text-[#0F6E56]">{slot?.price_sar} ريال</span>
+          <div style={{ padding: '16px' }}>
+            {[
+              { l: 'الموقع', v: `${facility?.city}${facility?.district ? ` · ${facility.district}` : ''}` },
+              { l: 'التاريخ', v: dateLabel ?? '' },
+              { l: 'الوقت',   v: slot ? `${fmt(slot.start_hour)} – ${fmt(slot.end_hour)}` : '' },
+            ].map((row) => (
+              <div key={row.l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ color: 'var(--text3)', fontSize: 13 }}>{row.l}</span>
+                <span style={{ color: 'var(--text)', fontSize: 13, fontWeight: 600 }} dir="ltr">{row.v}</span>
+              </div>
+            ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12 }}>
+              <span style={{ color: 'var(--text)', fontWeight: 700, fontSize: 15 }}>الإجمالي</span>
+              <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: 22 }}>{slot?.price_sar} ريال</span>
             </div>
           </div>
         </div>
 
-        {/* تنبيه الدفع */}
-        <div className="bg-[#FFF8E8] border border-[#C17B1A] rounded-2xl p-4 flex gap-3">
-          <span className="text-xl">⚡</span>
+        {/* Notice */}
+        <div style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)', borderRadius: 16, padding: '14px', display: 'flex', gap: 10 }}>
+          <span style={{ fontSize: 20 }}>⚡</span>
           <div>
-            <p className="text-xs font-bold text-[#C17B1A]">الدفع قيد الإعداد</p>
-            <p className="text-xs text-[#6B7280] mt-0.5">سيُفعَّل الدفع الإلكتروني قريباً. يمكنك تأكيد الحجز والدفع عند الوصول.</p>
+            <p style={{ color: 'var(--gold)', fontSize: 13, fontWeight: 700 }}>الدفع قيد الإعداد</p>
+            <p style={{ color: 'var(--text3)', fontSize: 12, marginTop: 2 }}>سيُفعَّل الدفع الإلكتروني قريباً. يمكن الدفع عند الوصول.</p>
           </div>
         </div>
 
-        {/* سياسة الإلغاء */}
-        <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-1.5">
-          <p className="text-xs font-bold text-[#1A1A1A]">سياسة الإلغاء</p>
-          <p className="text-xs text-[#6B7280]">• يمكن إلغاء الحجز قبل 24 ساعة من الموعد</p>
-          <p className="text-xs text-[#6B7280]">• بعد تأكيد الحجز سيُرسل لك إشعار عبر واتساب</p>
+        {/* Policy */}
+        <div style={{ background: 'var(--card)', borderRadius: 16, border: '1px solid var(--border)', padding: '14px' }}>
+          <p style={{ color: 'var(--text)', fontWeight: 700, fontSize: 13, marginBottom: 8 }}>سياسة الإلغاء</p>
+          <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.7 }}>• الإلغاء مجاناً قبل 24 ساعة من الموعد{'\n'}• يصلك إشعار تأكيد عبر واتساب فور الحجز</p>
         </div>
 
-        {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+        {error && <p style={{ color: 'var(--danger)', fontSize: 13, textAlign: 'center' }}>{error}</p>}
       </div>
 
-      {/* أزرار ثابتة */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8ECEF] px-4 py-4 space-y-2">
-        <button onClick={confirmBooking} disabled={confirming}
-          className="w-full bg-[#0F6E56] text-white py-3.5 rounded-2xl font-bold text-sm disabled:opacity-50">
+      {/* Fixed buttons */}
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--bg2)', borderTop: '1px solid var(--border)', padding: '14px 16px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button onClick={confirmBooking} disabled={confirming} className="press"
+          style={{ width: '100%', padding: '15px', borderRadius: 16, background: 'var(--primary)', color: 'var(--primary-fg)', border: 'none', fontWeight: 700, fontSize: 16, cursor: 'pointer', opacity: confirming ? 0.6 : 1 }}>
           {confirming ? 'جاري التأكيد...' : `✓ تأكيد الحجز — ${slot?.price_sar} ريال`}
         </button>
-        <button onClick={() => router.back()}
-          className="w-full border border-[#E8ECEF] text-[#6B7280] py-3 rounded-2xl text-sm">
+        <button onClick={() => router.back()} style={{ width: '100%', padding: '13px', borderRadius: 16, background: 'none', border: '1.5px solid var(--border)', color: 'var(--text2)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
           تعديل الوقت
         </button>
       </div>
@@ -181,7 +145,7 @@ function ConfirmContent() {
 
 export default function ConfirmBookingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-[#6B7280]">جاري التحميل...</div>}>
+    <Suspense fallback={<div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: 'var(--text3)' }}>جاري التحميل...</p></div>}>
       <ConfirmContent />
     </Suspense>
   )
