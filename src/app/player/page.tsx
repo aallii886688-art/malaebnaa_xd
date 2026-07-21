@@ -46,7 +46,7 @@ export default async function PlayerDashboard() {
         ) : (
           <div className="bg-[#F8F9FA] border border-[#E8ECEF] rounded-2xl p-4 text-center">
             <p className="text-sm text-[#6B7280]">لا توجد حجوزات قادمة</p>
-            <Link href="/facilities" className="text-sm text-[#0F6E56] font-medium mt-1 block">احجز ملعب الآن</Link>
+            <Link href="/player/facilities" className="text-sm text-[#0F6E56] font-medium mt-1 block">احجز ملعب الآن</Link>
           </div>
         )}
 
@@ -67,7 +67,7 @@ export default async function PlayerDashboard() {
           <h2 className="text-sm font-bold text-[#1A1A1A] mb-3">روابط سريعة</h2>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { href: '/facilities', icon: '⚽', label: 'الملاعب' },
+              { href: '/player/facilities', icon: '⚽', label: 'الملاعب' },
               { href: '/academies', icon: '🏅', label: 'الأكاديميات' },
               { href: '/tournaments', icon: '🏆', label: 'البطولات' },
             ].map((item) => (
