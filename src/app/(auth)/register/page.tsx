@@ -13,24 +13,21 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({ full_name: '', phone: '', account_type: 'player' as AccountType })
+  const [formattedPhone, setFormattedPhone] = useState('')
   const [otp, setOtp] = useState('')
 
-  const formatPhone = (raw: string) => {
-    const digits = raw.replace(/\D/g, '')
-    if (digits.startsWith('05') && digits.length === 10) return '+966' + digits.slice(1)
-    return raw
-  }
-
   const sendOtp = async () => {
-    if (!form.full_name || !form.phone) { setError('يرجى تعبئة جميع الحقول'); return }
+    if (!form.full_name.trim() || !form.phone) { setError('يرجى تعبئة جميع الحقول'); return }
     setLoading(true)
     setError('')
-    const formattedPhone = formatPhone(form.phone)
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
-      options: { data: { full_name: form.full_name, phone: formattedPhone, account_type: form.account_type } }
+    const res = await fetch('/api/auth/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: form.phone }),
     })
-    if (error) { setError(error.message); setLoading(false); return }
+    const data = await res.json()
+    if (!res.ok) { setError(data.error ?? 'حدث خطأ'); setLoading(false); return }
+    setFormattedPhone(data.phone)
     setStep('otp')
     setLoading(false)
   }
@@ -38,14 +35,23 @@ export default function RegisterPage() {
   const verifyOtp = async () => {
     setLoading(true)
     setError('')
-    const formattedPhone = formatPhone(form.phone)
-    const { data, error } = await supabase.auth.verifyOtp({ phone: formattedPhone, token: otp, type: 'sms' })
-    if (error) { setError('رمز التحقق غير صحيح'); setLoading(false); return }
+    const res = await fetch('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: formattedPhone,
+        otp,
+        full_name: form.full_name,
+        account_type: form.account_type,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) { setError(data.error ?? 'رمز خاطئ'); setLoading(false); return }
 
-    // Insert role
-    if (data.user) {
-      await supabase.from('user_roles').upsert({ user_id: data.user.id, role: form.account_type === 'partner' ? 'partner' : 'player' })
-    }
+    await supabase.auth.setSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+    })
 
     router.push('/dashboard')
   }
@@ -62,9 +68,9 @@ export default function RegisterPage() {
           {step === 'form' ? (
             <>
               <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">إنشاء حساب جديد</h2>
-              <p className="text-sm text-[#6B7280] mb-6">اختر نوع حسابك وأدخل بياناتك</p>
+              <p className="text-sm text-[#6B7280] mb-5">سيصلك رمز التحقق على واتساب</p>
 
-              {/* Account type selector */}
+              {/* Account type */}
               <div className="grid grid-cols-2 gap-3 mb-5">
                 {(['player', 'partner'] as AccountType[]).map((type) => (
                   <button
@@ -80,14 +86,12 @@ export default function RegisterPage() {
                     <div className={`text-sm font-semibold ${form.account_type === type ? 'text-[#0F6E56]' : 'text-[#1A1A1A]'}`}>
                       {type === 'player' ? 'لاعب' : 'شريك'}
                     </div>
-                    <div className="text-xs text-[#6B7280] mt-0.5">
-                      {type === 'player' ? 'احجز وشارك' : 'أدر منشأتك'}
-                    </div>
                   </button>
                 ))}
               </div>
+
               {form.account_type === 'partner' && (
-                <p className="text-xs text-[#6B7280] bg-[#F8F9FA] rounded-lg p-3 mb-4">
+                <p className="text-xs text-[#6B7280] bg-[#F8F9FA] rounded-lg p-2 mb-4">
                   تفعيل أنشطة الشركاء يتم من داخل الحساب ويحتاج موافقة الإدارة
                 </p>
               )}
@@ -101,39 +105,48 @@ export default function RegisterPage() {
               />
 
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1">رقم الجوال</label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                placeholder="05XXXXXXXX"
-                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0F6E56] mb-5"
-                dir="ltr"
-              />
+              <div className="flex items-center border border-[#E8ECEF] rounded-xl overflow-hidden mb-5 focus-within:border-[#0F6E56]">
+                <span className="px-3 text-sm text-[#6B7280] border-l border-[#E8ECEF] bg-[#F8F9FA] py-3">🇸🇦 +966</span>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  placeholder="05XXXXXXXX"
+                  className="flex-1 px-3 py-3 text-sm focus:outline-none"
+                  dir="ltr"
+                />
+              </div>
 
               {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+
               <button
                 onClick={sendOtp}
                 disabled={loading}
-                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50"
+                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? 'جاري الإرسال...' : 'إرسال رمز التحقق'}
+                {loading ? 'جاري الإرسال...' : <><span>📱</span> إرسال رمز واتساب</>}
               </button>
             </>
           ) : (
             <>
-              <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">التحقق من الجوال</h2>
-              <p className="text-sm text-[#6B7280] mb-6">تم إرسال رمز التحقق إلى {form.phone}</p>
+              <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">رمز التحقق</h2>
+              <div className="flex items-center gap-2 bg-[#E8F5F1] rounded-xl p-3 mb-5">
+                <span>💬</span>
+                <p className="text-sm text-[#0F6E56]">تم إرسال الرمز على واتساب إلى <strong>{formattedPhone}</strong></p>
+              </div>
 
               <input
                 type="text"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="123456"
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="• • • • • •"
                 maxLength={6}
-                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0F6E56] mb-4 text-center text-xl tracking-widest"
+                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-4 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-[#0F6E56] mb-4"
                 dir="ltr"
               />
-              {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+
+              {error && <p className="text-red-500 text-xs mb-3 text-center">{error}</p>}
+
               <button
                 onClick={verifyOtp}
                 disabled={loading || otp.length < 6}
@@ -141,8 +154,10 @@ export default function RegisterPage() {
               >
                 {loading ? 'جاري التحقق...' : 'إنشاء الحساب'}
               </button>
-              <button onClick={() => setStep('form')} className="w-full text-sm text-[#6B7280]">
-                رجوع
+
+              <button onClick={() => { setStep('form'); setOtp(''); setError('') }}
+                className="w-full text-sm text-[#6B7280] py-2">
+                ← رجوع
               </button>
             </>
           )}

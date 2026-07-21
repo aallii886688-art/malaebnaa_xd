@@ -8,25 +8,23 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
   const [phone, setPhone] = useState('')
+  const [formattedPhone, setFormattedPhone] = useState('')
   const [otp, setOtp] = useState('')
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const formatPhone = (raw: string) => {
-    // Convert 05XXXXXXXX to +9665XXXXXXXX
-    const digits = raw.replace(/\D/g, '')
-    if (digits.startsWith('05') && digits.length === 10) return '+966' + digits.slice(1)
-    if (digits.startsWith('9665') && digits.length === 12) return '+' + digits
-    return raw
-  }
-
   const sendOtp = async () => {
     setLoading(true)
     setError('')
-    const formattedPhone = formatPhone(phone)
-    const { error } = await supabase.auth.signInWithOtp({ phone: formattedPhone })
-    if (error) { setError(error.message); setLoading(false); return }
+    const res = await fetch('/api/auth/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    })
+    const data = await res.json()
+    if (!res.ok) { setError(data.error ?? 'حدث خطأ'); setLoading(false); return }
+    setFormattedPhone(data.phone)
     setStep('otp')
     setLoading(false)
   }
@@ -34,9 +32,20 @@ export default function LoginPage() {
   const verifyOtp = async () => {
     setLoading(true)
     setError('')
-    const formattedPhone = formatPhone(phone)
-    const { error } = await supabase.auth.verifyOtp({ phone: formattedPhone, token: otp, type: 'sms' })
-    if (error) { setError('رمز التحقق غير صحيح'); setLoading(false); return }
+    const res = await fetch('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: formattedPhone, otp }),
+    })
+    const data = await res.json()
+    if (!res.ok) { setError(data.error ?? 'رمز خاطئ'); setLoading(false); return }
+
+    // تعيين الجلسة في المتصفح
+    await supabase.auth.setSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+    })
+
     router.push('/dashboard')
   }
 
@@ -49,43 +58,56 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E8ECEF] p-6">
-          <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">تسجيل الدخول</h2>
-          <p className="text-sm text-[#6B7280] mb-6">أدخل رقم جوالك للمتابعة</p>
-
           {step === 'phone' ? (
             <>
+              <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">تسجيل الدخول</h2>
+              <p className="text-sm text-[#6B7280] mb-6">سيصلك رمز التحقق على واتساب</p>
+
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1">رقم الجوال</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="05XXXXXXXX"
-                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0F6E56] mb-4"
-                dir="ltr"
-              />
+              <div className="flex items-center border border-[#E8ECEF] rounded-xl overflow-hidden mb-4 focus-within:border-[#0F6E56]">
+                <span className="px-3 text-sm text-[#6B7280] border-l border-[#E8ECEF] bg-[#F8F9FA] py-3">🇸🇦 +966</span>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="05XXXXXXXX"
+                  className="flex-1 px-3 py-3 text-sm focus:outline-none"
+                  dir="ltr"
+                />
+              </div>
+
               {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+
               <button
                 onClick={sendOtp}
                 disabled={loading || phone.length < 10}
-                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50"
+                className="w-full bg-[#0F6E56] text-white py-3 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? 'جاري الإرسال...' : 'إرسال رمز التحقق'}
+                {loading ? 'جاري الإرسال...' : (
+                  <><span>📱</span> إرسال رمز واتساب</>
+                )}
               </button>
             </>
           ) : (
             <>
-              <p className="text-sm text-[#6B7280] mb-4">تم إرسال رمز التحقق إلى {phone}</p>
-              <label className="block text-sm font-medium text-[#1A1A1A] mb-1">رمز التحقق</label>
+              <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">رمز التحقق</h2>
+              <div className="flex items-center gap-2 bg-[#E8F5F1] rounded-xl p-3 mb-5">
+                <span>💬</span>
+                <p className="text-sm text-[#0F6E56]">تم إرسال الرمز على واتساب إلى <strong>{formattedPhone}</strong></p>
+              </div>
+
               <input
                 type="text"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="123456"
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="• • • • • •"
                 maxLength={6}
-                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0F6E56] mb-4 text-center text-xl tracking-widest"
+                className="w-full border border-[#E8ECEF] rounded-xl px-4 py-4 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-[#0F6E56] mb-4"
                 dir="ltr"
               />
-              {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+
+              {error && <p className="text-red-500 text-xs mb-3 text-center">{error}</p>}
+
               <button
                 onClick={verifyOtp}
                 disabled={loading || otp.length < 6}
@@ -93,8 +115,10 @@ export default function LoginPage() {
               >
                 {loading ? 'جاري التحقق...' : 'تحقق وادخل'}
               </button>
-              <button onClick={() => setStep('phone')} className="w-full text-sm text-[#6B7280]">
-                تغيير رقم الجوال
+
+              <button onClick={() => { setStep('phone'); setOtp(''); setError('') }}
+                className="w-full text-sm text-[#6B7280] py-2">
+                ← تغيير رقم الجوال
               </button>
             </>
           )}
