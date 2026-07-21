@@ -85,7 +85,7 @@ export default async function PlayerDashboard() {
         {[
           { href: '/player', icon: '🏠', label: 'الرئيسية' },
           { href: '/player/bookings', icon: '📅', label: 'حجوزاتي' },
-          { href: '/player/tournaments', icon: '🏆', label: 'بطولاتي' },
+          { href: '/player/facilities', icon: '⚽', label: 'الملاعب' },
           { href: '/player/profile', icon: '👤', label: 'حسابي' },
         ].map((item) => (
           <Link key={item.href} href={item.href} className="flex-1 flex flex-col items-center py-2 gap-0.5">

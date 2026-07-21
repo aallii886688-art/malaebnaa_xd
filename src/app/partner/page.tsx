@@ -43,6 +43,7 @@ export default async function PartnerDashboard() {
               const href = role.activity === 'facility_manager' ? '/partner/facilities'
                 : role.activity === 'academy_manager' ? '/partner/academies'
                 : '/partner/tournaments'
+
               return (
                 <a key={role.activity} href={href}
                   className="flex items-center gap-3 bg-white rounded-2xl border border-[#E8ECEF] p-4">
@@ -100,14 +101,16 @@ export default async function PartnerDashboard() {
           </div>
         )}
 
-        {/* Player mode link */}
-        <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 flex items-center gap-3">
-          <span className="text-2xl">🏃</span>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-[#1A1A1A]">وضع اللاعب</p>
-            <p className="text-xs text-[#6B7280]">تصفح وأحجز كمستخدم عادي</p>
-          </div>
-          <a href="/player" className="text-xs text-[#0F6E56] font-medium">انتقل ←</a>
+        {/* Quick links */}
+        <div className="bg-white rounded-2xl border border-[#E8ECEF] p-4 space-y-2">
+          <a href="/partner/bookings" className="flex items-center justify-between py-2 border-b border-[#F8F9FA]">
+            <span className="text-sm font-medium text-[#1A1A1A]">📅 الحجوزات</span>
+            <span className="text-[#6B7280] text-sm">←</span>
+          </a>
+          <a href="/player" className="flex items-center justify-between py-2">
+            <span className="text-sm font-medium text-[#1A1A1A]">🏃 وضع اللاعب</span>
+            <span className="text-[#6B7280] text-sm">←</span>
+          </a>
         </div>
       </div>
     </div>
