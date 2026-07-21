@@ -12,32 +12,34 @@ function formatPhone(raw: string): string {
   return raw
 }
 
-async function sendWhatsAppOtp(phone: string, otp: string) {
-  const token = process.env.WHATSAPP_TOKEN
-  const phoneId = process.env.WHATSAPP_PHONE_ID
+async function sendWhatsAppOtp(phone: string, otp: string): Promise<boolean> {
+  const apiKey = process.env.WASENDER_API_KEY
 
-  if (!token || !phoneId) {
+  if (!apiKey) {
     console.log(`[DEV] WhatsApp OTP for ${phone}: ${otp}`)
     return true
   }
 
-  const res = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+  // WasenderAPI — إرسال رسالة نصية
+  const res = await fetch('https://www.wasenderapi.com/api/send-message', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      to: phone.replace('+', ''),
-      type: 'text',
-      text: {
-        body: `🔐 رمز التحقق لتطبيق ملاعبنا:\n\n*${otp}*\n\nصالح لمدة 5 دقائق. لا تشاركه مع أحد.`,
-      },
+      to: phone,
+      text: `🔐 رمز التحقق لتطبيق ملاعبنا:\n\n*${otp}*\n\nصالح لمدة 5 دقائق. لا تشاركه مع أحد.`,
     }),
   })
 
-  return res.ok
+  if (!res.ok) {
+    const err = await res.text()
+    console.error('WasenderAPI error:', err)
+    return false
+  }
+
+  return true
 }
 
 export async function POST(req: NextRequest) {
