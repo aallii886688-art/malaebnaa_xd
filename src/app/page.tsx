@@ -1,9 +1,9 @@
 import Link from 'next/link'
 
 const sections = [
-  { href: '/facilities', label: 'الملاعب', color: 'bg-[#E8F5F1] border-[#0F6E56]', icon: '⚽', accent: '#0F6E56' },
-  { href: '/academies', label: 'الأكاديميات', color: 'bg-[#F0E8FF] border-[#6B3FA0]', icon: '🏅', accent: '#6B3FA0' },
-  { href: '/tournaments', label: 'البطولات', color: 'bg-[#FFF8E8] border-[#C17B1A]', icon: '🏆', accent: '#C17B1A' },
+  { href: '/player/facilities', label: 'الملاعب', color: 'bg-[#E8F5F1] border-[#0F6E56]', icon: '⚽', accent: '#0F6E56' },
+  { href: '/player/academies', label: 'الأكاديميات', color: 'bg-[#F0E8FF] border-[#6B3FA0]', icon: '🏅', accent: '#6B3FA0' },
+  { href: '/player/tournaments', label: 'البطولات', color: 'bg-[#FFF8E8] border-[#C17B1A]', icon: '🏆', accent: '#C17B1A' },
 ]
 
 export default function HomePage() {
