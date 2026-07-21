@@ -111,6 +111,14 @@ export default async function PartnerDashboard() {
             <span className="text-sm font-medium text-[#1A1A1A]">💰 محفظتي وأرباحي</span>
             <span className="text-[#6B7280] text-sm">←</span>
           </a>
+          <a href="/partner/reports" className="flex items-center justify-between py-2 border-b border-[#F8F9FA]">
+            <span className="text-sm font-medium text-[#1A1A1A]">📊 التقارير والإحصاءات</span>
+            <span className="text-[#6B7280] text-sm">←</span>
+          </a>
+          <a href="/partner/staff" className="flex items-center justify-between py-2 border-b border-[#F8F9FA]">
+            <span className="text-sm font-medium text-[#1A1A1A]">👥 إدارة الموظفين</span>
+            <span className="text-[#6B7280] text-sm">←</span>
+          </a>
           <a href="/player" className="flex items-center justify-between py-2">
             <span className="text-sm font-medium text-[#1A1A1A]">🏃 وضع اللاعب</span>
             <span className="text-[#6B7280] text-sm">←</span>
