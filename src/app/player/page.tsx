@@ -68,8 +68,8 @@ export default async function PlayerDashboard() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { href: '/player/facilities', icon: '⚽', label: 'الملاعب' },
-              { href: '/academies', icon: '🏅', label: 'الأكاديميات' },
-              { href: '/tournaments', icon: '🏆', label: 'البطولات' },
+              { href: '/player/academies', icon: '🏅', label: 'الأكاديميات' },
+              { href: '/player/tournaments', icon: '🏆', label: 'البطولات' },
             ].map((item) => (
               <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-[#F8F9FA]">
                 <span className="text-2xl">{item.icon}</span>

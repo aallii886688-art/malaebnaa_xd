@@ -66,7 +66,7 @@ export default function FacilityDetailPage() {
     const commission = Math.round(selectedSlot.price_sar * 0.05 * 100) / 100
     const net = selectedSlot.price_sar - commission
 
-    const { error } = await supabase.from('bookings').insert({
+    const { data, error } = await supabase.from('bookings').insert({
       facility_id: id,
       user_id: user.id,
       booking_date: selectedDate,
@@ -76,10 +76,11 @@ export default function FacilityDetailPage() {
       commission_sar: commission,
       net_amount_sar: net,
       status: 'pending_payment',
-    })
+    }).select('id').single()
 
     if (error) { setBookingError(error.message); setBooking(false); return }
-    setBookingDone(true)
+    // توجيه لصفحة الدفع
+    router.push(`/payment?booking_id=${data?.id}&amount=${selectedSlot.price_sar}&facility=${encodeURIComponent(facility!.name)}`)
     setBooking(false)
   }
 
