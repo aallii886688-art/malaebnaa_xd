@@ -1,0 +1,51 @@
+-- حذف كل شيء موجود وإعادة البناء من الصفر
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS activity_logs CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS commission_settings CASCADE;
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS tournament_matches CASCADE;
+DROP TABLE IF EXISTS tournament_teams CASCADE;
+DROP TABLE IF EXISTS tournaments CASCADE;
+DROP TABLE IF EXISTS academy_subscriptions CASCADE;
+DROP TABLE IF EXISTS academy_programs CASCADE;
+DROP TABLE IF EXISTS academies CASCADE;
+DROP TABLE IF EXISTS booking_locks CASCADE;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS facility_time_slots CASCADE;
+DROP TABLE IF EXISTS facilities CASCADE;
+DROP TABLE IF EXISTS field_values CASCADE;
+DROP TABLE IF EXISTS partner_field_assignments CASCADE;
+DROP TABLE IF EXISTS field_definitions CASCADE;
+DROP TABLE IF EXISTS field_categories CASCADE;
+DROP TABLE IF EXISTS partner_employee_permission_grants CASCADE;
+DROP TABLE IF EXISTS partner_employees CASCADE;
+DROP TABLE IF EXISTS partner_roles CASCADE;
+DROP TABLE IF EXISTS admin_permission_grants CASCADE;
+DROP TABLE IF EXISTS permissions CASCADE;
+DROP TABLE IF EXISTS admin_users CASCADE;
+DROP TABLE IF EXISTS user_roles CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+DROP TABLE IF EXISTS phone_otps CASCADE;
+
+DROP TYPE IF EXISTS user_role CASCADE;
+DROP TYPE IF EXISTS partner_activity CASCADE;
+DROP TYPE IF EXISTS approval_status CASCADE;
+DROP TYPE IF EXISTS field_type CASCADE;
+DROP TYPE IF EXISTS sport_type CASCADE;
+DROP TYPE IF EXISTS booking_status CASCADE;
+DROP TYPE IF EXISTS pricing_type CASCADE;
+DROP TYPE IF EXISTS subscription_status CASCADE;
+DROP TYPE IF EXISTS tournament_system CASCADE;
+DROP TYPE IF EXISTS team_status CASCADE;
+DROP TYPE IF EXISTS payment_type CASCADE;
+DROP TYPE IF EXISTS payment_status CASCADE;
+DROP TYPE IF EXISTS notification_type CASCADE;
+
+DROP FUNCTION IF EXISTS is_admin CASCADE;
+DROP FUNCTION IF EXISTS update_updated_at CASCADE;
+DROP FUNCTION IF EXISTS handle_new_user CASCADE;
+DROP FUNCTION IF EXISTS update_entity_rating CASCADE;
+DROP FUNCTION IF EXISTS manage_academy_seats CASCADE;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
