@@ -1,9 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
+import DynamicFields, { type DynamicFieldsHandle, saveDynamicFieldValues } from '@/components/DynamicFields'
 
-type Tournament = { id: string; name: string; sport_type: string; city: string; venue: string | null; status: string; max_teams: number; players_per_team: number; substitutes_per_team: number; registration_fee_sar: number; age_group: string | null; start_date: string | null; registration_deadline: string | null; show_results: boolean; show_standings: boolean }
+type Tournament = { id: string; name: string; sport_type: string; city: string; venue: string | null; status: string; max_teams: number; players_per_team: number; substitutes_per_team: number; registration_fee_sar: number; age_group: string | null; start_date: string | null; registration_deadline: string | null; show_results: boolean; show_standings: boolean; owner_id: string }
 type Team = { id: string; team_name: string; status: string; players: {name:string}[] }
 type Match = { id: string; round: number; match_number: number; team1_id: string | null; team2_id: string | null; team1_score: number | null; team2_score: number | null; winner_id: string | null; is_played: boolean }
 
@@ -23,6 +24,7 @@ export default function TournamentDetailPage() {
   const [players, setPlayers] = useState<string[]>([''])
   const [registering, setRegistering] = useState(false)
   const [regError, setRegError] = useState('')
+  const dynamicRef = useRef<DynamicFieldsHandle>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -42,18 +44,22 @@ export default function TournamentDetailPage() {
 
   const register = async () => {
     if (!teamName.trim()) { setRegError('اسم الفريق مطلوب'); return }
+    if (dynamicRef.current && !dynamicRef.current.validate()) return
     const validPlayers = players.filter((p) => p.trim())
     setRegistering(true); setRegError('')
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
-    const { error } = await supabase.from('tournament_teams').insert({
+    const { data, error } = await supabase.from('tournament_teams').insert({
       tournament_id: id, captain_user_id: user.id, team_name: teamName,
       players: validPlayers.map((name) => ({ name })), status: 'pending',
-    })
+    }).select('id').single()
     if (error) { setRegError(error.message); setRegistering(false); return }
+    if (dynamicRef.current && data?.id) {
+      await saveDynamicFieldValues(dynamicRef.current.getValues(), data.id, 'tournament_teams', user.id)
+    }
     if (tournament && tournament.registration_fee_sar > 0) {
-      router.push(`/payment?booking_id=${id}&amount=${tournament.registration_fee_sar}&facility=${encodeURIComponent(tournament.name)}`)
+      router.push(`/payment?booking_id=${data?.id}&amount=${tournament.registration_fee_sar}&facility=${encodeURIComponent(tournament.name)}`)
     } else {
       setShowRegForm(false); setRegistering(false)
       router.refresh()
@@ -197,6 +203,12 @@ export default function TournamentDetailPage() {
                 </div>
               ))}
             </div>
+
+            {tournament.owner_id && (
+              <div style={{ marginBottom: 16 }}>
+                <DynamicFields ref={dynamicRef} ownerId={tournament.owner_id} activity="tournament_manager" useIn="tournament_registration" />
+              </div>
+            )}
 
             {regError && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12 }}>{regError}</p>}
             <div style={{ display: 'flex', gap: 8 }}>

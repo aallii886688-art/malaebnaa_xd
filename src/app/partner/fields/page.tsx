@@ -17,8 +17,9 @@ const fieldTypeLabel: Record<string, string> = {
 }
 
 const useInLabel: Record<string, string> = {
-  registration: '📝 تسجيل الطالب',
-  booking: '📅 نموذج الحجز',
+  registration: '📝 تسجيل في أكاديمية',
+  booking: '📅 حجز ملعب',
+  tournament_registration: '🏆 التسجيل في بطولة',
   facility_profile: '🏟️ ملف الملعب',
   academy_profile: '🏅 ملف الأكاديمية',
 }
