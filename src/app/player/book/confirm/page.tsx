@@ -1,9 +1,10 @@
 'use client'
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
+import DynamicFields, { type DynamicFieldsHandle, saveDynamicFieldValues } from '@/components/DynamicFields'
 
-type Facility = { id: string; name: string; city: string; district: string | null; sport_type: string }
+type Facility = { id: string; name: string; city: string; district: string | null; sport_type: string; owner_id: string }
 type TimeSlot  = { id: string; start_hour: number; end_hour: number; price_sar: number }
 
 const fmt = (h: number) => `${h % 12 === 0 ? 12 : h % 12}:00 ${h < 12 ? 'ص' : 'م'}`
@@ -21,21 +22,26 @@ function ConfirmContent() {
   const [loading,  setLoading]  = useState(true)
   const [confirming, setConfirming] = useState(false)
   const [error,    setError]    = useState('')
+  const [facilityOwnerId, setFacilityOwnerId] = useState<string | null>(null)
+  const dynamicRef = useRef<DynamicFieldsHandle>(null)
 
   useEffect(() => {
     if (!facilityId || !slotId || !date) { router.push('/player/facilities'); return }
     const supabase = createClient()
     Promise.all([
-      supabase.from('facilities').select('id,name,city,district,sport_type').eq('id', facilityId).single(),
+      supabase.from('facilities').select('id,name,city,district,sport_type,owner_id').eq('id', facilityId).single(),
       supabase.from('facility_time_slots').select('id,start_hour,end_hour,price_sar').eq('id', slotId).single(),
     ]).then(([{ data: f }, { data: s }]) => {
       if (!f || !s) { router.push('/player/facilities'); return }
-      setFacility(f as Facility); setSlot(s as TimeSlot); setLoading(false)
+      setFacility(f as Facility)
+      setFacilityOwnerId((f as Facility)?.owner_id ?? null)
+      setSlot(s as TimeSlot); setLoading(false)
     })
   }, [facilityId, slotId, date, router])
 
   const confirmBooking = async () => {
     if (!facility || !slot || !date) return
+    if (dynamicRef.current && !dynamicRef.current.validate()) return
     setConfirming(true); setError('')
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -48,6 +54,9 @@ function ConfirmContent() {
       status: 'pending_payment',
     }).select('id').single()
     if (err) { setError('فشل إنشاء الحجز، حاول مجدداً'); setConfirming(false); return }
+    if (dynamicRef.current && data?.id) {
+      await saveDynamicFieldValues(dynamicRef.current.getValues(), data.id, 'bookings', user.id)
+    }
     router.push(`/payment?booking_id=${data?.id}&amount=${slot.price_sar}&facility=${encodeURIComponent(facility.name)}`)
   }
 
@@ -110,6 +119,13 @@ function ConfirmContent() {
             </div>
           </div>
         </div>
+
+        {/* الحقول الديناميكية للحجز */}
+        {facilityOwnerId && (
+          <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+            <DynamicFields ref={dynamicRef} ownerId={facilityOwnerId} activity="facility_manager" useIn="booking" />
+          </div>
+        )}
 
         {/* Notice */}
         <div style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)', borderRadius: 16, padding: '14px', display: 'flex', gap: 10 }}>

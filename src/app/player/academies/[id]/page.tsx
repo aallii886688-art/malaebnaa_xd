@@ -1,9 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
+import DynamicFields, { type DynamicFieldsHandle, saveDynamicFieldValues } from '@/components/DynamicFields'
 
-type Academy = { id: string; name: string; city: string; phone: string | null; description: string | null; sport_types: string[]; rating: number; reviews_count: number }
+type Academy = { id: string; name: string; city: string; phone: string | null; description: string | null; sport_types: string[]; rating: number; reviews_count: number; owner_id: string }
 type Program = { id: string; name: string; sport_type: string; coach_name: string | null; age_min: number | null; age_max: number | null; max_students: number; current_students: number; monthly_price_sar: number | null; program_price_sar: number | null; pricing_type: string; is_active: boolean }
 
 const sportLabel: Record<string, string> = {
@@ -20,6 +21,9 @@ export default function AcademyDetailPage() {
   const [subscribing, setSubscribing] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [academyOwnerId, setAcademyOwnerId] = useState<string | null>(null)
+  const [pendingProgram, setPendingProgram] = useState<{ program: Program; pricingType: 'monthly' | 'program' } | null>(null)
+  const dynamicRef = useRef<DynamicFieldsHandle>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -27,11 +31,21 @@ export default function AcademyDetailPage() {
       supabase.from('academies').select('*').eq('id', id).single(),
       supabase.from('academy_programs').select('*').eq('academy_id', id).eq('is_active', true),
     ]).then(([{ data: a }, { data: p }]) => {
-      setAcademy(a as Academy); setPrograms((p as Program[]) ?? []); setLoading(false)
+      setAcademy(a as Academy)
+      setAcademyOwnerId((a as Academy)?.owner_id ?? null)
+      setPrograms((p as Program[]) ?? [])
+      setLoading(false)
     })
   }, [id])
 
   const subscribe = async (program: Program, pricingType: 'monthly' | 'program') => {
+    // إذا كانت هناك حقول ديناميكية، اعرض نموذج الحقول أولاً
+    if (academyOwnerId && !pendingProgram) {
+      setPendingProgram({ program, pricingType })
+      return
+    }
+    if (dynamicRef.current && !dynamicRef.current.validate()) return
+
     setSubscribing(program.id); setError('')
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -47,8 +61,12 @@ export default function AcademyDetailPage() {
     }).select('id').single()
 
     if (err) { setError(err.message); setSubscribing(null); return }
+    if (dynamicRef.current) {
+      await saveDynamicFieldValues(dynamicRef.current.getValues(), data.id, 'academy_subscriptions', user.id)
+    }
     setSubscribed(program.id)
     setSubscribing(null)
+    setPendingProgram(null)
     router.push(`/payment?booking_id=${data.id}&amount=${amount}&facility=${encodeURIComponent(academy!.name + ' — ' + program.name)}`)
   }
 
@@ -121,6 +139,30 @@ export default function AcademyDetailPage() {
 
         {error && <p style={{ color: 'var(--danger)', fontSize: 12, textAlign: 'center' }}>{error}</p>}
       </div>
+
+      {/* Bottom sheet للحقول الديناميكية عند التسجيل */}
+      {pendingProgram && academyOwnerId && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 50, display: 'flex', alignItems: 'flex-end' }}
+          onClick={() => setPendingProgram(null)}>
+          <div style={{ background: 'var(--card)', borderRadius: '24px 24px 0 0', width: '100%', maxHeight: '80svh', overflowY: 'auto', padding: '20px 16px 36px' }}
+            onClick={(e) => e.stopPropagation()}>
+            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 16px' }} />
+            <h3 style={{ fontWeight: 700, color: 'var(--text)', fontSize: 16, margin: '0 0 4px' }}>
+              التسجيل في {pendingProgram.program.name}
+            </h3>
+            <p style={{ fontSize: 12, color: 'var(--text3)', margin: '0 0 20px' }}>
+              {pendingProgram.pricingType === 'monthly' ? pendingProgram.program.monthly_price_sar + ' ر/شهر' : pendingProgram.program.program_price_sar + ' ر/برنامج'}
+            </p>
+            <DynamicFields ref={dynamicRef} ownerId={academyOwnerId} activity="academy_manager" useIn="registration" />
+            <button
+              onClick={() => subscribe(pendingProgram.program, pendingProgram.pricingType)}
+              disabled={!!subscribing}
+              style={{ width: '100%', marginTop: 20, background: 'var(--primary)', color: 'var(--primary-fg)', padding: '14px', borderRadius: 16, fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer', opacity: subscribing ? 0.5 : 1 }}>
+              {subscribing ? 'جاري التسجيل...' : 'تأكيد التسجيل ←'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

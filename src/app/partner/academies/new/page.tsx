@@ -1,8 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { sanitizeText, enforceLimit } from '@/lib/sanitize'
+import DynamicFields, { type DynamicFieldsHandle, saveDynamicFieldValues } from '@/components/DynamicFields'
 
 const sportOptions = [
   { value: 'football', label: '⚽ كرة قدم' }, { value: 'futsal', label: '🥅 فوتسال' },
@@ -18,6 +19,12 @@ export default function NewAcademyPage() {
   const [form, setForm] = useState({ name: '', city: '', phone: '', description: '', sport_types: [] as string[] })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [userId, setUserId] = useState<string | null>(null)
+  const dynamicRef = useRef<DynamicFieldsHandle>(null)
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id) })
+  }, [])
 
   const toggleSport = (val: string) => setForm((f) => ({
     ...f,
@@ -28,6 +35,7 @@ export default function NewAcademyPage() {
     if (!form.name.trim() || !form.city || form.sport_types.length === 0) {
       setError('الاسم والمدينة ونوع الرياضة مطلوبة'); return
     }
+    if (dynamicRef.current && !dynamicRef.current.validate()) return
     setSaving(true); setError('')
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -41,6 +49,9 @@ export default function NewAcademyPage() {
       description: form.description ? enforceLimit(sanitizeText(form.description), 'description') : null,
     }).select('id').single()
     if (err) { setError(err.message); setSaving(false); return }
+    if (dynamicRef.current) {
+      await saveDynamicFieldValues(dynamicRef.current.getValues(), data.id, 'academies', user.id)
+    }
     router.push(`/partner/academies/${data.id}`)
   }
 
@@ -102,6 +113,12 @@ export default function NewAcademyPage() {
               rows={3} style={{ ...inputStyle, resize: 'none' }} />
           </div>
         </div>
+
+        {userId && (
+          <div style={{ background: 'var(--card)', borderRadius: 20, border: '1px solid var(--border)', padding: 16 }}>
+            <DynamicFields ref={dynamicRef} ownerId={userId} activity="academy_manager" useIn="academy_profile" />
+          </div>
+        )}
 
         {error && <p style={{ color: 'var(--danger)', fontSize: 12, textAlign: 'center' }}>{error}</p>}
         <button onClick={save} disabled={saving}

@@ -12,6 +12,7 @@ const navItems = [
   { href: '/partner/wallet',       icon: '💰', label: 'المحفظة' },
   { href: '/partner/reports',      icon: '📊', label: 'التقارير' },
   { href: '/partner/staff',        icon: '👥', label: 'الموظفون' },
+  { href: '/partner/fields',       icon: '📋', label: 'حقولي' },
 ]
 
 export default function PartnerTopBar() {
