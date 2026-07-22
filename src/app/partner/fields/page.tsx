@@ -17,11 +17,12 @@ const fieldTypeLabel: Record<string, string> = {
 }
 
 const useInLabel: Record<string, string> = {
-  registration: '📝 تسجيل في أكاديمية',
-  booking: '📅 حجز ملعب',
-  tournament_registration: '🏆 التسجيل في بطولة',
+  registration: '📝 تسجيل طالب',
+  tournament_registration: '🏆 تسجيل فريق',
   facility_profile: '🏟️ ملف الملعب',
   academy_profile: '🏅 ملف الأكاديمية',
+  academy_program: '🏃 ملف البرنامج التدريبي',
+  activation_request: '🤝 طلب التفعيل',
 }
 
 const activityLabel: Record<string, string> = {

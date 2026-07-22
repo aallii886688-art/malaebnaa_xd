@@ -1,7 +1,8 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
+import DynamicFields, { type DynamicFieldsHandle, saveDynamicFieldValues } from '@/components/DynamicFields'
 
 type Academy = { id: string; name: string; city: string; phone: string | null; description: string | null; is_active: boolean; sport_types: string[] }
 type Program = { id: string; name: string; sport_type: string; coach_name: string | null; max_students: number; current_students: number; monthly_price_sar: number | null; program_price_sar: number | null; pricing_type: string; is_active: boolean; age_min: number | null; age_max: number | null }
@@ -24,6 +25,8 @@ export default function AcademyManagePage() {
   const [form, setForm] = useState(defaultProg)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [userId, setUserId] = useState<string | null>(null)
+  const dynamicRef = useRef<DynamicFieldsHandle>(null)
 
   const load = async () => {
     const supabase = createClient()
@@ -36,6 +39,10 @@ export default function AcademyManagePage() {
 
   useEffect(() => { load() }, [id])
 
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id) })
+  }, [])
+
   const toggleActive = async () => {
     if (!academy) return
     const supabase = createClient()
@@ -45,17 +52,21 @@ export default function AcademyManagePage() {
 
   const saveProgram = async () => {
     if (!form.name.trim() || !form.max_students) { setError('الاسم والحد الأقصى للطلاب مطلوبان'); return }
+    if (dynamicRef.current && !dynamicRef.current.validate()) return
     setSaving(true); setError('')
     const supabase = createClient()
-    const { error: err } = await supabase.from('academy_programs').insert({
+    const { data, error: err } = await supabase.from('academy_programs').insert({
       academy_id: id, name: form.name, sport_type: form.sport_type,
       coach_name: form.coach_name || null, age_min: form.age_min ? +form.age_min : null,
       age_max: form.age_max ? +form.age_max : null, max_students: +form.max_students,
       pricing_type: form.pricing_type,
       monthly_price_sar: form.monthly_price_sar ? +form.monthly_price_sar : null,
       program_price_sar: form.program_price_sar ? +form.program_price_sar : null,
-    })
+    }).select('id').single()
     if (err) { setError(err.message); setSaving(false); return }
+    if (dynamicRef.current && data?.id && userId) {
+      await saveDynamicFieldValues(dynamicRef.current.getValues(), data.id, 'academy_programs', userId)
+    }
     setShowForm(false); setForm(defaultProg); await load(); setSaving(false)
   }
 
@@ -193,6 +204,12 @@ export default function AcademyManagePage() {
                 </div>
               )}
             </div>
+
+            {userId && (
+              <div style={{ marginBottom: 12 }}>
+                <DynamicFields ref={dynamicRef} ownerId={userId} activity="academy_manager" useIn="academy_program" />
+              </div>
+            )}
 
             {error && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12 }}>{error}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
