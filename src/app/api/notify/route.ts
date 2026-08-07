@@ -58,6 +58,11 @@ export async function POST(req: NextRequest) {
       notifTitle = 'تم تفعيل نشاطك'
       notifBody = `نشاطك ${data.activityLabel} تم تفعيله`
       break
+    case 'staff_added':
+      message = messages.staffAdded(data.facilityName, data.roleLabel)
+      notifTitle = 'تمت إضافتك كموظف'
+      notifBody = `تمت إضافتك في ${data.facilityName}`
+      break
     default:
       return NextResponse.json({ error: 'Unknown type' }, { status: 400 })
   }
