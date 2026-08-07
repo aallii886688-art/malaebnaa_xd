@@ -50,8 +50,9 @@ export default function PartnerBookingsPage() {
 
     const { data: fields } = await supabase.from('fields').select('id, name, facility_id, facilities!facility_id(name)').in('facility_id', facIds)
     const fm: FieldMap = {}
-    ;(fields ?? []).forEach((f: { id: number; name: string; facility_id: number; facilities: { name: string } | null }) => {
-      fm[f.id] = { name: f.name, facility_id: f.facility_id, facility_name: f.facilities?.name ?? '' }
+    ;(fields ?? []).forEach((f: { id: number; name: string; facility_id: number; facilities: { name: string }[] | null }) => {
+      const facName = Array.isArray(f.facilities) ? (f.facilities[0]?.name ?? '') : (f.facilities as { name: string } | null)?.name ?? ''
+      fm[f.id] = { name: f.name, facility_id: f.facility_id, facility_name: facName }
     })
     setFieldMap(fm)
     const fieldIds = Object.keys(fm).map(Number)
