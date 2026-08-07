@@ -41,7 +41,9 @@ export default function PartnerCheckinPage() {
       ])
 
       const ownedList = (owned ?? []) as Facility[]
-      const staffedList = ((staffed ?? []) as { facilities: Facility | null }[]).map(s => s.facilities).filter(Boolean) as Facility[]
+      const staffedList = ((staffed ?? []) as { facilities: Facility[] | null }[])
+        .flatMap(s => Array.isArray(s.facilities) ? s.facilities : (s.facilities ? [s.facilities] : []))
+        .filter(Boolean) as Facility[]
 
       const merged = [...ownedList, ...staffedList].filter((f, i, arr) => arr.findIndex(x => x.id === f.id) === i)
       setFacilities(merged)
