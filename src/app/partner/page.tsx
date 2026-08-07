@@ -21,11 +21,15 @@ export default async function PartnerDashboard() {
   }
 
   const quickLinks = [
-    { href: '/partner/bookings', icon: '📅', label: 'الحجوزات' },
-    { href: '/partner/wallet',   icon: '💰', label: 'المحفظة' },
-    { href: '/partner/reports',  icon: '📊', label: 'التقارير' },
-    { href: '/partner/staff',    icon: '👥', label: 'الموظفون' },
-    { href: '/player',           icon: '🏃', label: 'وضع اللاعب' },
+    { href: '/partner/checkin',       icon: '🎫', label: 'تسجيل الدخول' },
+    { href: '/partner/bookings',      icon: '📅', label: 'الحجوزات' },
+    { href: '/partner/wallet',        icon: '💰', label: 'المحفظة' },
+    { href: '/partner/reviews',       icon: '⭐', label: 'التقييمات' },
+    { href: '/partner/reports',       icon: '📊', label: 'التقارير' },
+    { href: '/partner/staff',         icon: '👥', label: 'الموظفون' },
+    { href: '/partner/notifications', icon: '🔔', label: 'الإشعارات' },
+    { href: '/partner/logs',          icon: '📋', label: 'سجل النشاطات' },
+    { href: '/player',                icon: '🏃', label: 'وضع اللاعب' },
   ]
 
   return (
