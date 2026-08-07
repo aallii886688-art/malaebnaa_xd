@@ -34,4 +34,10 @@ export const messages = {
 
   partnerApproved: (activityLabel: string) =>
     `✅ *تم تفعيل نشاطك على ملاعبنا!*\n\n🎉 ${activityLabel}\n\nيمكنك الآن إضافة وإدارة نشاطك من التطبيق.`,
+
+  staffAdded: (facilityName: string, role: string) =>
+    `👋 *تمت إضافتك كموظف!*\n\n🏟️ ${facilityName}\n🎭 الدور: ${role}\n\nادخل إلى حسابك على *ملاعبنا* للوصول إلى لوحة التحكم.\n🔗 malaebnaa.com`,
+
+  staffInvited: (facilityName: string, role: string) =>
+    `🎉 *دعوة للانضمام إلى فريق ${facilityName}*\n\n🎭 الدور: ${role}\n\nتم ترشيحك كموظف في *ملاعبنا*!\n\nسجّل الآن:\n🔗 malaebnaa.com/register\n\nوسيتم تفعيل دورك فور التسجيل.`,
 }
