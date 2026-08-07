@@ -390,14 +390,21 @@ INSERT INTO public.facility_subscriptions(facility_id,status,trial_ends_at)
   }
 ]
 
-async function runSQL(dbUrl: string, sql: string): Promise<{ ok: boolean; error?: string }> {
-  // Supabase connection pooler — يعتمد على postgres npm package
+async function runSQL(_dbUrl: string, sql: string): Promise<{ ok: boolean; error?: string }> {
+  // تشغيل SQL عبر Supabase Management API (بدون postgres package)
+  const pat = process.env.SUPABASE_PAT
+  const ref = process.env.NEXT_PUBLIC_SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1]
+  if (!pat || !ref) return { ok: false, error: 'SUPABASE_PAT or URL missing' }
   try {
-    // dynamic import لتفادي مشاكل bundle
-    const { default: postgres } = await import('postgres')
-    const client = postgres(dbUrl, { max: 1, idle_timeout: 20 })
-    await client.unsafe(sql)
-    await client.end()
+    const res = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${pat}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: sql }),
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      return { ok: false, error: err.slice(0, 400) }
+    }
     return { ok: true }
   } catch (e: unknown) {
     return { ok: false, error: e instanceof Error ? e.message.slice(0, 400) : String(e) }
